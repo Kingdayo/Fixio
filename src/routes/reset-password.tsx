@@ -8,10 +8,10 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Set a new password — Quill" },
-      { name: "description", content: "Choose a new password for your Quill account." },
-      { property: "og:title", content: "Set a new password — Quill" },
-      { property: "og:description", content: "Choose a new password for your Quill account." },
+      { title: "Set a new password — Fixio" },
+      { name: "description", content: "Choose a new password for your Fixio account." },
+      { property: "og:title", content: "Set a new password — Fixio" },
+      { property: "og:description", content: "Choose a new password for your Fixio account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

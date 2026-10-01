@@ -18,9 +18,9 @@ export function OrbitalLoader({
         <div className="absolute size-full animate-orbit-quill">
           <div className="size-3.5 rounded-full bg-brand shadow-[0_0_12px_oklch(0.679_0.2_38)]" />
         </div>
-        {/* Core Q badge */}
+        {/* Core F badge */}
         <div className="relative grid size-10 place-items-center rounded-xl bg-brand font-display text-lg font-bold text-brand-foreground shadow-md animate-bounce">
-          Q
+          F
         </div>
       </div>
 

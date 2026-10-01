@@ -11,9 +11,9 @@ import { dateGroupLabel, isSameMonth, isToday } from "@/lib/bug-utils";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Quill" },
+      { title: "Dashboard — Fixio" },
       { name: "description", content: "Document a new bug and review your latest QA records." },
-      { property: "og:title", content: "Dashboard — Quill" },
+      { property: "og:title", content: "Dashboard — Fixio" },
       {
         property: "og:description",
         content: "Document a new bug and review your latest QA records.",

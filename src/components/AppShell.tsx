@@ -53,9 +53,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2.5">
             <Link to="/dashboard" className="flex items-center gap-2.5">
               <span className="grid size-8 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-brand-foreground">
-                Q
+                F
               </span>
-              <span className="font-display text-lg font-semibold tracking-tight">Quill</span>
+              <span className="font-display text-lg font-semibold tracking-tight">Fixio</span>
             </Link>
             <span className="ml-1 hidden rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted-foreground sm:inline">
               Personal QA log
@@ -106,7 +106,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
         {sessionLoading ? (
-          <OrbitalLoader label="Loading Quill…" sublabel="Initializing session" />
+          <OrbitalLoader label="Loading Fixio…" sublabel="Initializing session" />
         ) : (
           children
         )}

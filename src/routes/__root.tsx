@@ -80,17 +80,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Quill — Personal QA bug documentation" },
+      { title: "Fixio — Personal QA bug documentation" },
       {
         name: "description",
         content:
-          "Describe a bug in plain words and Quill turns it into a structured QA report saved to your private history.",
+          "Describe a bug in plain words and Fixio turns it into a structured QA report saved to your private history.",
       },
-      { property: "og:title", content: "Quill — Personal QA bug documentation" },
+      { property: "og:title", content: "Fixio — Personal QA bug documentation" },
       {
         property: "og:description",
         content:
-          "Describe a bug in plain words and Quill turns it into a structured QA report saved to your private history.",
+          "Describe a bug in plain words and Fixio turns it into a structured QA report saved to your private history.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
