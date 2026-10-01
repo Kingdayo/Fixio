@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { useSession } from "@/hooks/useSession";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,12 +44,15 @@ function Landing() {
             </span>
             <span className="font-display text-lg font-semibold tracking-tight">Fixio</span>
           </div>
-          <Link
-            to="/auth"
-            className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              to="/auth"
+              className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </header>
 

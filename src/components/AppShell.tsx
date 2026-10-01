@@ -8,6 +8,7 @@ import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
 import { initialsFrom } from "@/lib/bug-utils";
 import { OrbitalLoader } from "@/components/OrbitalLoader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,6 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-muted-foreground lg:inline">{today}</span>
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
