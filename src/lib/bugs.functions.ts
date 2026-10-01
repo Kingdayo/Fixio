@@ -104,41 +104,76 @@ export type StructuredBug = {
 export type StructureBugResult =
   { ok: true; bug: StructuredBug } | { ok: false; reason: "insufficient" | "ai" | "save" };
 
-export const structureBug = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { rawInput: string }) => inputSchema.parse(data))
-  .handler(async ({ data, context }): Promise<StructureBugResult> => {
-    const lovableKey = process.env["LOVABLE_API_KEY"];
-    const openaiKey = process.env["OPENAI_API_KEY"];
-    const apiKey = lovableKey || openaiKey;
+/**
+ * Executes AI generation across supported AI providers:
+ * Google Gemini API, Groq API, Anthropic API, and OpenRouter API.
+ */
+async function generateQAWithAI(
+  rawInput: string,
+): Promise<z.infer<typeof structuredSchema> | null> {
+  const geminiKey = process.env["GEMINI_API_KEY"] || process.env["GOOGLE_API_KEY"];
+  const groqKey = process.env["GROQ_API_KEY"];
+  const anthropicKey = process.env["ANTHROPIC_API_KEY"];
+  const openrouterKey = process.env["OPENROUTER_API_KEY"];
 
-    if (!apiKey) {
-      console.error("No AI API Key provided (LOVABLE_API_KEY or OPENAI_API_KEY).");
-      return { ok: false, reason: "ai" };
-    }
-
-    const endpoint = lovableKey
-      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
-      : "https://api.openai.com/v1/chat/completions";
-
-    const modelName = lovableKey ? "openai/gpt-6-astra" : "gpt-4o";
-
-    let parsed: z.infer<typeof structuredSchema> | null = null;
-
+  // 1. Try Google Gemini API
+  if (geminiKey) {
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: `${SYSTEM_PROMPT}\n\nUser Raw Bug Observation:\n${rawInput}` }],
+              },
+            ],
+            generationConfig: {
+              response_mime_type: "application/json",
+            },
+          }),
+        },
+      );
+
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          candidates?: { content?: { parts?: { text?: string }[] } }[];
+        };
+        const text = payload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+        if (text) {
+          const cleaned = text
+            .trim()
+            .replace(/^```(?:json)?/i, "")
+            .replace(/```$/, "")
+            .trim();
+          return structuredSchema.parse(JSON.parse(cleaned));
+        }
+      } else {
+        console.error("Gemini API error", response.status, await response.text());
+      }
+    } catch (err) {
+      console.error("Gemini API request failed", err);
+    }
+  }
+
+  // 2. Try Groq API
+  if (groqKey) {
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${groqKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: modelName,
-          reasoning_effort: lovableKey ? "low" : undefined,
+          model: "llama-3.3-70b-versatile",
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: data.rawInput },
+            { role: "user", content: rawInput },
           ],
         }),
       });
@@ -147,21 +182,110 @@ export const structureBug = createServerFn({ method: "POST" })
         const payload = (await response.json()) as {
           choices?: { message?: { content?: string } }[];
         };
-        const content = payload.choices?.[0]?.message?.content ?? "";
-        const cleaned = content
-          .trim()
-          .replace(/^```(?:json)?/i, "")
-          .replace(/```$/, "")
-          .trim();
-        parsed = structuredSchema.parse(JSON.parse(cleaned));
+        const text = payload.choices?.[0]?.message?.content ?? "";
+        if (text) {
+          const cleaned = text
+            .trim()
+            .replace(/^```(?:json)?/i, "")
+            .replace(/```$/, "")
+            .trim();
+          return structuredSchema.parse(JSON.parse(cleaned));
+        }
       } else {
-        console.error("AI API Error", response.status, await response.text());
-        return { ok: false, reason: "ai" };
+        console.error("Groq API error", response.status, await response.text());
       }
-    } catch (error) {
-      console.error("Failed to process bug with AI", error);
-      return { ok: false, reason: "ai" };
+    } catch (err) {
+      console.error("Groq API request failed", err);
     }
+  }
+
+  // 3. Try Anthropic API
+  if (anthropicKey) {
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": anthropicKey,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: "user", content: rawInput }],
+        }),
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          content?: { type: string; text: string }[];
+        };
+        const text = payload.content?.[0]?.text ?? "";
+        if (text) {
+          const cleaned = text
+            .trim()
+            .replace(/^```(?:json)?/i, "")
+            .replace(/```$/, "")
+            .trim();
+          return structuredSchema.parse(JSON.parse(cleaned));
+        }
+      } else {
+        console.error("Anthropic API error", response.status, await response.text());
+      }
+    } catch (err) {
+      console.error("Anthropic API request failed", err);
+    }
+  }
+
+  // 4. Try OpenRouter API
+  if (openrouterKey) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: rawInput },
+          ],
+        }),
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          choices?: { message?: { content?: string } }[];
+        };
+        const text = payload.choices?.[0]?.message?.content ?? "";
+        if (text) {
+          const cleaned = text
+            .trim()
+            .replace(/^```(?:json)?/i, "")
+            .replace(/```$/, "")
+            .trim();
+          return structuredSchema.parse(JSON.parse(cleaned));
+        }
+      } else {
+        console.error("OpenRouter API error", response.status, await response.text());
+      }
+    } catch (err) {
+      console.error("OpenRouter API request failed", err);
+    }
+  }
+
+  return null;
+}
+
+export const structureBug = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { rawInput: string }) => inputSchema.parse(data))
+  .handler(async ({ data, context }): Promise<StructureBugResult> => {
+    const parsed = await generateQAWithAI(data.rawInput);
 
     if (!parsed) {
       return { ok: false, reason: "ai" };
