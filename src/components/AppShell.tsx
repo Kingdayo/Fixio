@@ -75,9 +75,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Ambient glowing bubbly background orbs */}
-      <div className="pointer-events-none fixed top-10 left-10 size-96 rounded-full glow-orb-brand animate-bubble-float z-0" />
-      <div className="pointer-events-none fixed bottom-12 right-12 size-80 rounded-full glow-orb-info animate-bubble-float z-0 [animation-delay:-3s]" />
+      {/* Ambient glowing bubbly background orbs with live motion drift */}
+      <div className="pointer-events-none fixed top-10 left-10 size-96 rounded-full glow-orb-brand animate-float-drift z-0" />
+      <div className="pointer-events-none fixed bottom-12 right-12 size-80 rounded-full glow-orb-info animate-float-drift z-0 [animation-delay:-4s]" />
+      <div className="pointer-events-none fixed top-1/2 left-1/3 size-64 rounded-full bg-brand/5 blur-3xl animate-bubble-float z-0 [animation-delay:-2s]" />
 
       <header className="relative z-10 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
