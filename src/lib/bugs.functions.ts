@@ -43,7 +43,7 @@ Return ONLY a valid JSON object with exactly these keys:
    - Concise, highly specific, professional defect title in Title Case summarizing the core problem in as few words as practical.
    - It MUST be significantly shorter than the raw input and state the exact defect clearly.
    - Remove filler words, first-person phrasing ("When I...", "I noticed...", "The user is..."), and vague terms.
-   - Examples:
+   - Benchmark Examples:
      * Raw: "In tutor, when you remove a subject under region and levels it disappears briefly but appears back again. When the save button is clicked the subject is removed permanently. Also when the tutor leaves the region and levels section, the subject is still removed without clicking the save button"
        -> Bug: Removed Subject Reappears Before Saving
      * Raw: "Saved subjects don't reflect in the saved items on tutor but the digipreneur courses reflect."
@@ -55,20 +55,29 @@ Return ONLY a valid JSON object with exactly these keys:
 
 3. MODULE ("module"):
    - Identify the specific feature or functional area using sub-feature hierarchy: "Feature - Sub-Feature".
-   - Examples: "Tutor - Region and Levels", "Tutor - Saved Items", "Account Login - Tour Guide", "Privacy Policy - Dark Mode", "Sign Up - Google", "Notifications - Unread Count", "Search - Voice-to-Text".
+   - Benchmark Examples: "Tutor - Region and Levels", "Tutor - Saved Items", "Account Login - Tour Guide", "Privacy Policy - Dark Mode", "Sign Up - Google", "Notifications - Unread Count", "Search - Voice-to-Text".
    - Avoid generic categories like "General", "System", "Application", "Other" whenever specific context exists.
 
 4. DESCRIPTION ("description"):
    - Detailed, professional narrative explaining where the issue occurs, the workflow/actions taken, and the exact defective behaviors observed.
-   - Fully captures the context without repeating the title word-for-word or using filler like "This is a bug where...".
+   - Benchmark Examples:
+     * "When a tutor removes a subject under Region and Levels, the subject disappears briefly but reappears again. However, clicking the Save button removes the subject permanently. Additionally, the subject remains removed even when the tutor leaves the Region and Levels section without clicking Save."
+     * "When a tutor saves subjects, the saved subjects are not reflected in the Saved Items section, although Digipreneur courses that are saved are displayed correctly."
+     * "When two different account types are logged into on the same device, the tour guide is displayed only for the first account. After logging out and logging into another account type, the tour guide is not displayed."
 
 5. EXPECTED RESULT ("expected_result"):
    - Articulates the expected software logic and intended user experience clearly.
-   - Uses terms such as "should", "should be", "should allow", "should display", "should update", "should remain".
+   - Benchmark Examples:
+     * "A removed subject should either remain unchanged until the tutor clicks Save, or the removal should be immediately saved and consistently reflected. Leaving the section without saving should not apply the change."
+     * "Saved subjects should appear in the tutor's Saved Items section, similar to saved Digipreneur courses."
+     * "Each account type should receive the tour guide when logging in for the first time on the device."
 
 6. ACTUAL RESULT ("actual_result"):
    - Factual, direct summary of the observed defective behavior contrasting the expected state.
-   - MUST preserve concrete evidence, numerical values ("99+", "20"), error messages ("Server Error"), device names ("Xiaomi 12"), specific item types, or UI components mentioned in the input.
+   - Benchmark Examples:
+     * "The subject temporarily disappears and reappears, but is permanently removed after clicking Save. The subject is also removed when the tutor leaves the section without clicking Save."
+     * "Saved subjects do not appear in Saved Items, while saved Digipreneur courses are displayed."
+     * "The first account receives the tour guide, but the second account type does not receive it after login."
 
 7. DISTINCTNESS & QUALITY STANDARDS:
    - Every section must have a distinct purpose:
@@ -95,255 +104,67 @@ export type StructuredBug = {
 export type StructureBugResult =
   { ok: true; bug: StructuredBug } | { ok: false; reason: "insufficient" | "ai" | "save" };
 
-/**
- * Advanced Fallback QA Processing Engine
- * Operates when AI gateway is unreachable or returns invalid format.
- * Implements high-quality QA report generation matching expert QA standards.
- */
-function fallbackStructureBug(rawInput: string): z.infer<typeof structuredSchema> {
-  const cleaned = rawInput.trim();
-  const words = cleaned.split(/\s+/).filter(Boolean);
-  const alphanumericCount = (cleaned.match(/[a-zA-Z0-9]/g) || []).length;
-
-  if (words.length < 2 && alphanumericCount < 4) {
-    return { insufficient: true };
-  }
-
-  const lower = cleaned.toLowerCase();
-
-  // Benchmark Example 1: Tutor - Region and Levels (Subject Removal)
-  if (
-    lower.includes("region and levels") ||
-    (lower.includes("tutor") &&
-      lower.includes("subject") &&
-      (lower.includes("disappears") || lower.includes("reappears")))
-  ) {
-    return {
-      insufficient: false,
-      title: "Removed Subject Reappears Before Saving",
-      module: "Tutor - Region and Levels",
-      description:
-        "When a tutor removes a subject under Region and Levels, the subject disappears briefly but reappears again. However, clicking the Save button removes the subject permanently. Additionally, the subject remains removed even when the tutor leaves the Region and Levels section without clicking Save.",
-      expected_result:
-        "A removed subject should either remain unchanged until the tutor clicks Save, or the removal should be immediately saved and consistently reflected. Leaving the section without saving should not apply the change.",
-      actual_result:
-        "The subject temporarily disappears and reappears, but is permanently removed after clicking Save. The subject is also removed when the tutor leaves the section without clicking Save.",
-    };
-  }
-
-  // Benchmark Example 2: Tutor - Saved Items (Saved Subjects Mismatch)
-  if (
-    (lower.includes("saved subjects") || lower.includes("digipreneur")) &&
-    (lower.includes("saved items") || lower.includes("tutor"))
-  ) {
-    return {
-      insufficient: false,
-      title: "Saved Subjects Not Displayed in Saved Items",
-      module: "Tutor - Saved Items",
-      description:
-        "When a tutor saves subjects, the saved subjects are not reflected in the Saved Items section, although Digipreneur courses that are saved are displayed correctly.",
-      expected_result:
-        "Saved subjects should appear in the tutor's Saved Items section, similar to saved Digipreneur courses.",
-      actual_result:
-        "Saved subjects do not appear in Saved Items, while saved Digipreneur courses are displayed.",
-    };
-  }
-
-  // Benchmark Example 3: Tour Guide / Account Switch
-  if (
-    lower.includes("tour guide") ||
-    (lower.includes("account type") && lower.includes("tour")) ||
-    (lower.includes("same device") && lower.includes("tour"))
-  ) {
-    return {
-      insufficient: false,
-      title: "Tour Guide Not Displayed After Switching Account Types",
-      module: "Account Login - Tour Guide",
-      description:
-        "When two different account types are logged into on the same device, the tour guide is displayed only for the first account. After logging out and logging into another account type, the tour guide is not displayed.",
-      expected_result:
-        "Each account type should receive the tour guide when logging in for the first time on the device.",
-      actual_result:
-        "The first account receives the tour guide, but the second account type does not receive it after login.",
-    };
-  }
-
-  // Common Pattern: Dark Mode / Theme
-  if (
-    lower.includes("dark mode") ||
-    (lower.includes("privacy policy") && lower.includes("black"))
-  ) {
-    const pageName = lower.includes("privacy policy") ? "Privacy Policy" : "Settings";
-    return {
-      insufficient: false,
-      title: `${pageName} Text Remains Black in Dark Mode`,
-      module: `${pageName} - Dark Mode`,
-      description: `When Dark Mode is enabled on the ${pageName} page, the text does not adopt an appropriate dark-mode color.`,
-      expected_result: `${pageName} text should use a suitable light color in Dark Mode for clear visibility and readability.`,
-      actual_result: `The text remains black in Dark Mode, resulting in poor contrast against the dark background.`,
-    };
-  }
-
-  // Common Pattern: More Menu / Navigation scrolling
-  if (lower.includes("more button") || (lower.includes("navigation") && lower.includes("scroll"))) {
-    return {
-      insufficient: false,
-      title: "Additional Navigation Content Is Not Scrollable",
-      module: "Navigation - More Menu",
-      description:
-        "Opening the More menu displays additional navigation options, but the content cannot be scrolled.",
-      expected_result:
-        "The More menu should allow users to scroll through and access all available options.",
-      actual_result:
-        "The additional navigation content is not scrollable, preventing access to options outside the visible area.",
-    };
-  }
-
-  // Common Pattern: Notification Count
-  if (
-    lower.includes("notification") &&
-    (lower.includes("count") || lower.includes("number") || lower.includes("99+"))
-  ) {
-    const numbersInInput = cleaned.match(/\b\d+\+?\b/g) || [];
-    const displayNum = numbersInInput[0] || "99+";
-    const actualNum = numbersInInput[1] || "20";
-    return {
-      insufficient: false,
-      title: "Incorrect Notification Count Display",
-      module: "Notifications - Unread Count",
-      description:
-        "The notification counter does not accurately reflect the actual number of available notifications.",
-      expected_result:
-        "The notification counter should accurately reflect the true number of available notifications.",
-      actual_result: `The counter displays ${displayNum} while only ${actualNum} notifications are available.`,
-    };
-  }
-
-  // Generalized Dynamic Domain Parser (Prevents generic "System" boilerplate)
-
-  // 1. Module Extraction
-  let domain = "";
-  let subDomain = "";
-
-  if (lower.includes("tutor")) domain = "Tutor";
-  else if (lower.includes("learner")) domain = "Learner";
-  else if (lower.includes("login") || lower.includes("account")) domain = "Account Login";
-  else if (lower.includes("signup") || lower.includes("register")) domain = "Registration";
-  else if (lower.includes("notification")) domain = "Notifications";
-  else if (lower.includes("search")) domain = "Search";
-  else if (lower.includes("privacy policy")) domain = "Privacy Policy";
-  else if (lower.includes("wallet") || lower.includes("payment")) domain = "Wallet";
-  else if (lower.includes("chat") || lower.includes("message")) domain = "Chat";
-  else if (lower.includes("course") || lower.includes("digipreneur")) domain = "Courses";
-  else domain = "Feature Workflow";
-
-  if (lower.includes("region") || lower.includes("level")) subDomain = "Region and Levels";
-  else if (lower.includes("saved items") || lower.includes("saved")) subDomain = "Saved Items";
-  else if (lower.includes("tour guide") || lower.includes("tour")) subDomain = "Tour Guide";
-  else if (lower.includes("dark mode")) subDomain = "Dark Mode";
-  else if (lower.includes("voice")) subDomain = "Voice-to-Text";
-  else if (lower.includes("count") || lower.includes("number")) subDomain = "Unread Count";
-  else if (lower.includes("button")) subDomain = "Button Interaction";
-
-  const fullModule = subDomain ? `${domain} - ${subDomain}` : domain;
-
-  // 2. Clean first person / filler language
-  const cleanCore = cleaned
-    .replace(
-      /^(when i was|when i|i noticed that|i noticed|i try to|i can't|i cannot|i get|there is an issue where|there seems to be|basically|for some reason)\s+/gi,
-      "",
-    )
-    .trim();
-
-  // 3. Generate Title
-  const firstSentence = cleanCore.split(/[.!?\n]/)[0] || cleanCore;
-  let formattedTitle = firstSentence
-    .replace(/doesn't work/gi, "Is Unresponsive")
-    .replace(/does not work/gi, "Is Unresponsive")
-    .replace(/don't work/gi, "Is Unresponsive")
-    .replace(/gives error/gi, "Displays Error")
-    .trim();
-
-  // Keep title short
-  const wordsInTitle = formattedTitle.split(/\s+/);
-  if (wordsInTitle.length > 7) {
-    formattedTitle = wordsInTitle.slice(0, 7).join(" ");
-  }
-  formattedTitle = formattedTitle
-    .split(/\s+/)
-    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
-    .join(" ");
-
-  // 4. Construct narrative description, expected, and actual results using domain specifics
-  const featureContext = subDomain ? subDomain : domain;
-  const description = `In ${domain.toLowerCase()}, when observing ${featureContext.toLowerCase()}, ${cleanCore.charAt(0).toLowerCase() + cleanCore.slice(1)}${
-    cleanCore.endsWith(".") ? "" : "."
-  }`;
-
-  const expectedResult = `The ${featureContext.toLowerCase()} functionality in ${domain.toLowerCase()} should operate reliably and update state consistently according to user actions.`;
-
-  let actualResult = cleanCore;
-  if (!actualResult.endsWith(".")) actualResult += ".";
-  actualResult = actualResult.charAt(0).toUpperCase() + actualResult.slice(1);
-
-  return {
-    insufficient: false,
-    title: formattedTitle || `${domain} Behavior Defect`,
-    module: fullModule,
-    description,
-    expected_result: expectedResult,
-    actual_result: actualResult,
-  };
-}
-
 export const structureBug = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { rawInput: string }) => inputSchema.parse(data))
   .handler(async ({ data, context }): Promise<StructureBugResult> => {
-    const apiKey = process.env["LOVABLE_API_KEY"];
+    const lovableKey = process.env["LOVABLE_API_KEY"];
+    const openaiKey = process.env["OPENAI_API_KEY"];
+    const apiKey = lovableKey || openaiKey;
+
+    if (!apiKey) {
+      console.error("No AI API Key provided (LOVABLE_API_KEY or OPENAI_API_KEY).");
+      return { ok: false, reason: "ai" };
+    }
+
+    const endpoint = lovableKey
+      ? "https://ai.gateway.lovable.dev/v1/chat/completions"
+      : "https://api.openai.com/v1/chat/completions";
+
+    const modelName = lovableKey ? "openai/gpt-6-astra" : "gpt-4o";
 
     let parsed: z.infer<typeof structuredSchema> | null = null;
 
-    if (apiKey) {
-      try {
-        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "openai/gpt-6-astra",
-            reasoning_effort: "low",
-            response_format: { type: "json_object" },
-            messages: [
-              { role: "system", content: SYSTEM_PROMPT },
-              { role: "user", content: data.rawInput },
-            ],
-          }),
-        });
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: modelName,
+          reasoning_effort: lovableKey ? "low" : undefined,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: data.rawInput },
+          ],
+        }),
+      });
 
-        if (response.ok) {
-          const payload = (await response.json()) as {
-            choices?: { message?: { content?: string } }[];
-          };
-          const content = payload.choices?.[0]?.message?.content ?? "";
-          const cleaned = content
-            .trim()
-            .replace(/^```(?:json)?/i, "")
-            .replace(/```$/, "")
-            .trim();
-          parsed = structuredSchema.parse(JSON.parse(cleaned));
-        } else {
-          console.error("AI gateway response error", response.status, await response.text());
-        }
-      } catch (error) {
-        console.error("Failed to structure bug with AI, using fallback parser", error);
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          choices?: { message?: { content?: string } }[];
+        };
+        const content = payload.choices?.[0]?.message?.content ?? "";
+        const cleaned = content
+          .trim()
+          .replace(/^```(?:json)?/i, "")
+          .replace(/```$/, "")
+          .trim();
+        parsed = structuredSchema.parse(JSON.parse(cleaned));
+      } else {
+        console.error("AI API Error", response.status, await response.text());
+        return { ok: false, reason: "ai" };
       }
+    } catch (error) {
+      console.error("Failed to process bug with AI", error);
+      return { ok: false, reason: "ai" };
     }
 
     if (!parsed) {
-      parsed = fallbackStructureBug(data.rawInput);
+      return { ok: false, reason: "ai" };
     }
 
     if (parsed.insufficient || !parsed.title?.trim()) {
