@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { History, Home, PenLine, User } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -30,6 +30,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile(user?.id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [navigating, setNavigating] = useState(false);
+
+  const routerState = useRouterState({
+    select: (s) => ({
+      isLoading: s.isLoading,
+      status: s.status,
+      location: s.location.pathname,
+    }),
+  });
+
+  // Clear navigating indicator when location changes
+  useEffect(() => {
+    setNavigating(false);
+  }, [routerState.location]);
+
+  function handleTabClick() {
+    setNavigating(true);
+    // Auto timeout fallback
+    setTimeout(() => setNavigating(false), 800);
+  }
 
   const name = profile?.name || user?.user_metadata?.["name"] || "";
   const email = profile?.email || user?.email || "";
@@ -68,7 +88,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.to}
                 to={item.to}
-                className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground active:scale-95"
+                onClick={handleTabClick}
+                className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground active:scale-95 cursor-pointer"
                 activeProps={{ className: "bg-secondary text-foreground font-semibold shadow-xs" }}
               >
                 {item.label}
@@ -96,8 +117,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">Profile</Link>
+                <DropdownMenuItem asChild onClick={handleTabClick}>
+                  <Link to="/profile" className="cursor-pointer">
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => void handleSignOut()}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
@@ -109,6 +132,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
         {sessionLoading ? (
           <OrbitalLoader label="Loading Fixio…" sublabel="Initializing session" />
+        ) : routerState.isLoading || routerState.status === "pending" || navigating ? (
+          <OrbitalLoader label="Switching view…" sublabel="Loading content" />
         ) : (
           children
         )}
@@ -120,7 +145,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.to}
               to={item.to}
-              className="flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] font-medium text-muted-foreground"
+              onClick={handleTabClick}
+              className="flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] font-medium text-muted-foreground cursor-pointer"
               activeProps={{ className: "text-brand" }}
             >
               <item.icon className="size-5" />
