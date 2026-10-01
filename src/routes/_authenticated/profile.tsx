@@ -13,12 +13,12 @@ import { formatBugDate } from "@/lib/bug-utils";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "Profile — Quill" },
-      { name: "description", content: "Manage your name, password and account details in Quill." },
-      { property: "og:title", content: "Profile — Quill" },
+      { title: "Profile — Fixio" },
+      { name: "description", content: "Manage your name, password and account details in Fixio." },
+      { property: "og:title", content: "Profile — Fixio" },
       {
         property: "og:description",
-        content: "Manage your name, password and account details in Quill.",
+        content: "Manage your name, password and account details in Fixio.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

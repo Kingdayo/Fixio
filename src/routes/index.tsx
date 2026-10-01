@@ -6,17 +6,17 @@ import { useSession } from "@/hooks/useSession";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Quill — Turn raw bug notes into QA reports" },
+      { title: "Fixio — Turn raw bug notes into QA reports" },
       {
         name: "description",
         content:
-          "Paste a bug exactly as you observed it. Quill writes the title, module, description, expected and actual result, and files it to your private history.",
+          "Paste a bug exactly as you observed it. Fixio writes the title, module, description, expected and actual result, and files it to your private history.",
       },
-      { property: "og:title", content: "Quill — Turn raw bug notes into QA reports" },
+      { property: "og:title", content: "Fixio — Turn raw bug notes into QA reports" },
       {
         property: "og:description",
         content:
-          "Paste a bug exactly as you observed it. Quill writes the structured QA report and files it to your private history.",
+          "Paste a bug exactly as you observed it. Fixio writes the structured QA report and files it to your private history.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -39,9 +39,9 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-brand-foreground">
-              Q
+              F
             </span>
-            <span className="font-display text-lg font-semibold tracking-tight">Quill</span>
+            <span className="font-display text-lg font-semibold tracking-tight">Fixio</span>
           </div>
           <Link
             to="/auth"
@@ -58,7 +58,7 @@ function Landing() {
           Describe what broke. Get a proper bug report.
         </h1>
         <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-foreground/70">
-          Paste the issue exactly as you saw it. Quill writes the title, module, description,
+          Paste the issue exactly as you saw it. Fixio writes the title, module, description,
           expected result and actual result, then files it to your own private history.
         </p>
         <div className="mt-8">
@@ -76,7 +76,7 @@ function Landing() {
             “Google sign up gives server error.”
           </p>
           <div className="my-6 h-px bg-border" />
-          <p className="label-eyebrow">Quill files</p>
+          <p className="label-eyebrow">Fixio files</p>
           <h2 className="mt-1.5 font-display text-2xl font-bold">
             Server Error During Google Sign-Up
           </h2>

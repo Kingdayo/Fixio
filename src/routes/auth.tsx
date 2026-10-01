@@ -10,12 +10,12 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — Quill" },
-      { name: "description", content: "Sign in or create your Quill bug documentation account." },
-      { property: "og:title", content: "Sign in — Quill" },
+      { title: "Sign in — Fixio" },
+      { name: "description", content: "Sign in or create your Fixio bug documentation account." },
+      { property: "og:title", content: "Sign in — Fixio" },
       {
         property: "og:description",
-        content: "Sign in or create your Quill bug documentation account.",
+        content: "Sign in or create your Fixio bug documentation account.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,7 +60,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. Welcome to Quill.");
+        toast.success("Account created. Welcome to Fixio.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -108,9 +108,9 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-brand-foreground">
-            Q
+            F
           </span>
-          <span className="font-display text-xl font-semibold tracking-tight">Quill</span>
+          <span className="font-display text-xl font-semibold tracking-tight">Fixio</span>
         </Link>
 
         <div className="mt-8 rounded-3xl bg-card p-6 shadow-card ring-1 ring-border sm:p-8">

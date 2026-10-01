@@ -8,9 +8,9 @@ import { useBug } from "@/hooks/useBugs";
 export const Route = createFileRoute("/_authenticated/bugs/$bugId")({
   head: () => ({
     meta: [
-      { title: "Bug report — Quill" },
+      { title: "Bug report — Fixio" },
       { name: "description", content: "Review, edit, copy or delete this documented bug report." },
-      { property: "og:title", content: "Bug report — Quill" },
+      { property: "og:title", content: "Bug report — Fixio" },
       {
         property: "og:description",
         content: "Review, edit, copy or delete this documented bug report.",

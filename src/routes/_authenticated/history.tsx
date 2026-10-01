@@ -9,12 +9,12 @@ import { formatBugDate, groupBugsByDay, isSameMonth, isToday } from "@/lib/bug-u
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
     meta: [
-      { title: "Bug history — Quill" },
+      { title: "Bug history — Fixio" },
       {
         name: "description",
         content: "Search, filter and reopen every bug report you have documented.",
       },
-      { property: "og:title", content: "Bug history — Quill" },
+      { property: "og:title", content: "Bug history — Fixio" },
       {
         property: "og:description",
         content: "Search, filter and reopen every bug report you have documented.",
