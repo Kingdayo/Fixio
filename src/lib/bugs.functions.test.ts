@@ -3,6 +3,7 @@ import { generateQAWithGemini, geminiOutputSchema, SYSTEM_PROMPT } from "./bugs.
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_ENV = process.env["GEMINI_API_KEY"];
+const ORIGINAL_VITE_ENV = process.env["VITE_GEMINI_API_KEY"];
 
 type GeminiRequestBody = {
   system_instruction?: {
@@ -21,6 +22,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
   afterEach(() => {
     globalThis.fetch = ORIGINAL_FETCH;
     process.env["GEMINI_API_KEY"] = ORIGINAL_ENV;
+    process.env["VITE_GEMINI_API_KEY"] = ORIGINAL_VITE_ENV;
   });
 
   it("validates structured Gemini output against geminiOutputSchema", () => {
@@ -177,8 +179,45 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
     }
   });
 
-  it("handles missing API key gracefully by returning missing_key", async () => {
+  it("uses VITE_GEMINI_API_KEY if GEMINI_API_KEY is missing", async () => {
     delete process.env["GEMINI_API_KEY"];
+    process.env["VITE_GEMINI_API_KEY"] = "test-vite-gemini-key";
+
+    let capturedUrl = "";
+    globalThis.fetch = mock(async (url: URL | RequestInfo) => {
+      capturedUrl = url.toString();
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      bug: "Test Bug",
+                      module: "Test Module",
+                      description: "Test Desc",
+                      expectedResult: "Test Exp",
+                      actualResult: "Test Act",
+                    }),
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const result = await generateQAWithGemini("Test bug observation");
+    expect(capturedUrl).toContain("key=test-vite-gemini-key");
+    expect(result.ok).toBe(true);
+  });
+
+  it("handles missing API key gracefully by returning missing_key when neither key is present", async () => {
+    delete process.env["GEMINI_API_KEY"];
+    delete process.env["VITE_GEMINI_API_KEY"];
 
     const result = await generateQAWithGemini("Test input");
     expect(result.ok).toBe(false);

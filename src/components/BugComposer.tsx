@@ -32,13 +32,13 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
             "Please provide a little more detail about the issue so it can be documented accurately.",
           );
         } else if (outcome.reason === "rate_limit") {
-          toast.error(
-            "AI processing is temporarily unavailable. Quota or rate limit reached. Please try again later.",
-          );
+          toast.error("AI processing rate limit or quota reached. Please try again later.");
         } else if (outcome.reason === "missing_key") {
-          toast.error("AI processing is temporarily unavailable. Please try again later.");
+          toast.error("AI processing is unavailable: GEMINI_API_KEY is missing or not configured.");
         } else if (outcome.reason === "save") {
           toast.error("Bug processing succeeded, but saving failed. Please try again.");
+        } else if (outcome.reason === "ai") {
+          toast.error("AI processing failed while generating QA report. Please try again.");
         } else {
           toast.error("Unable to process the bug right now. Please try again.");
         }
