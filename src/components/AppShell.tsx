@@ -103,7 +103,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">{children}</main>
+      <main className="mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+        {children}
+      </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card md:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-between px-2 py-1.5">

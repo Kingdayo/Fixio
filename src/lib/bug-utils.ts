@@ -78,9 +78,7 @@ export function bugReportText(bug: Bug): string {
 
 export function isSameMonth(iso: string, reference = new Date()): boolean {
   const date = new Date(iso);
-  return (
-    date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth()
-  );
+  return date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth();
 }
 
 export function isToday(iso: string): boolean {

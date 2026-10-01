@@ -48,7 +48,7 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl bg-card p-5 shadow-card ring-1 ring-border sm:p-7">
+      <div className="card-3d rounded-3xl p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-2">
           <span className="grid size-6 place-items-center rounded-md bg-brand/10">
             <span className="block size-2.5 rounded-sm bg-brand" />
@@ -63,14 +63,14 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
           value={raw}
           onChange={(event) => setRaw(event.target.value)}
           disabled={busy}
-          className="mt-4 w-full resize-none rounded-2xl border border-border bg-background px-4 py-3.5 text-[15px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-brand focus:bg-card disabled:opacity-70"
+          className="mt-4 w-full resize-none rounded-2xl border border-border bg-background px-4 py-3.5 text-[15px] leading-relaxed outline-none transition-all placeholder:text-muted-foreground/70 focus:border-brand focus:bg-card focus:shadow-[0_0_0_3px_oklch(0.679_0.2_38/0.2)] disabled:opacity-70"
           placeholder="Example: When a learner tries to log in through the web version on a mobile device, they are redirected to the App Store instead of the dashboard."
         />
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={() => void handleSubmit()}
             disabled={busy}
-            className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-95 disabled:opacity-70"
+            className="btn-tactile-primary rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-70"
           >
             {busy ? "Organizing…" : "Document bug"}
           </button>

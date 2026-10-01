@@ -84,9 +84,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
 
   return (
     <>
-      <div
-        className={`rounded-3xl bg-card p-6 shadow-card ring-1 ring-border sm:p-8 ${animate ? "animate-rise" : ""}`}
-      >
+      <div className={`card-3d rounded-3xl p-6 sm:p-8 ${animate ? "animate-rise" : ""}`}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="label-eyebrow">Bug title</p>
@@ -179,7 +177,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
               <button
                 onClick={() => void handleSave()}
                 disabled={saving}
-                className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground transition-transform active:scale-95 disabled:opacity-60"
+                className="btn-tactile-brand rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-60"
               >
                 {saving ? "Saving…" : "Save changes"}
               </button>
@@ -188,7 +186,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                   setDraft(bug);
                   setEditing(false);
                 }}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-transform active:scale-95"
+                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Cancel
               </button>
@@ -200,26 +198,26 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                   setDraft(bug);
                   setEditing(true);
                 }}
-                className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground transition-transform active:scale-95"
+                className="btn-tactile-brand rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
               >
                 Edit
               </button>
               <button
                 onClick={() => void handleCopy()}
-                className="rounded-full bg-secondary px-5 py-2.5 text-sm font-medium text-foreground transition-transform active:scale-95"
+                className="btn-tactile-secondary rounded-full bg-secondary px-5 py-2.5 text-sm font-medium text-foreground"
               >
                 Copy
               </button>
               <button
                 onClick={() => setDeleteOpen(true)}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-transform active:scale-95"
+                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
               >
                 Delete
               </button>
               {onDocumentAnother && (
                 <button
                   onClick={onDocumentAnother}
-                  className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-95 sm:ml-auto"
+                  className="btn-tactile-primary rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground sm:ml-auto"
                 >
                   + Document another bug
                 </button>

@@ -32,6 +32,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
   const { user, loading } = useSession();
@@ -45,6 +46,11 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match.");
+          setBusy(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
@@ -159,6 +165,22 @@ function AuthPage() {
                 required
               />
             </div>
+            {mode === "signup" && (
+              <div>
+                <label className="text-sm font-medium" htmlFor="confirmPassword">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  className={inputClass}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  minLength={8}
+                  required
+                />
+              </div>
+            )}
             <button
               type="submit"
               disabled={busy}
@@ -189,10 +211,7 @@ function AuthPage() {
               {mode === "signin" ? "Create an account" : "I already have an account"}
             </button>
             {mode === "signin" && (
-              <button
-                onClick={() => void handleForgotPassword()}
-                className="text-muted-foreground"
-              >
+              <button onClick={() => void handleForgotPassword()} className="text-muted-foreground">
                 Forgot password?
               </button>
             )}

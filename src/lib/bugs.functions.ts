@@ -51,56 +51,128 @@ export type StructuredBug = {
 };
 
 export type StructureBugResult =
-  | { ok: true; bug: StructuredBug }
-  | { ok: false; reason: "insufficient" | "ai" | "save" };
+  { ok: true; bug: StructuredBug } | { ok: false; reason: "insufficient" | "ai" | "save" };
+
+function fallbackStructureBug(rawInput: string): z.infer<typeof structuredSchema> {
+  const cleaned = rawInput.trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const alphanumericCount = (cleaned.match(/[a-zA-Z0-9]/g) || []).length;
+
+  if (words.length < 2 && alphanumericCount < 5) {
+    return { insufficient: true };
+  }
+
+  const lower = cleaned.toLowerCase();
+
+  let moduleName = "Feature / Workflow";
+  if (
+    lower.includes("google") &&
+    (lower.includes("sign") || lower.includes("signup") || lower.includes("login"))
+  ) {
+    moduleName = "Sign Up - Google";
+  } else if (
+    lower.includes("login") ||
+    lower.includes("sign in") ||
+    lower.includes("signin") ||
+    lower.includes("auth")
+  ) {
+    moduleName = "Login / Authentication";
+  } else if (lower.includes("signup") || lower.includes("sign up") || lower.includes("register")) {
+    moduleName = "Registration / Sign Up";
+  } else if (lower.includes("wallet") || lower.includes("balance")) {
+    moduleName = "Wallet / Help";
+  } else if (lower.includes("chat") || lower.includes("message") || lower.includes("unread")) {
+    moduleName = "Chat / Messaging";
+  } else if (lower.includes("pay") || lower.includes("payment") || lower.includes("checkout")) {
+    moduleName = "Payments / Notifications";
+  } else if (lower.includes("notification")) {
+    moduleName = "Notifications";
+  } else if (lower.includes("study guide") || lower.includes("guide")) {
+    moduleName = "Study Guide";
+  } else if (lower.includes("stream") || lower.includes("video") || lower.includes("fullscreen")) {
+    moduleName = "Live Stream / Fullscreen";
+  } else if (lower.includes("dark mode") || lower.includes("privacy")) {
+    moduleName = "Privacy Policy";
+  } else if (
+    lower.includes("scroll") ||
+    lower.includes("menu") ||
+    lower.includes("navigation") ||
+    lower.includes("more")
+  ) {
+    moduleName = "Navigation / More Menu";
+  }
+
+  let title = cleaned.replace(/[.\n]/g, " ").replace(/\s+/g, " ").trim();
+  if (title.length > 70) {
+    title = title.substring(0, 67).trim() + "...";
+  }
+  title = title
+    .split(" ")
+    .map((w) => (w.length > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+    .join(" ");
+
+  const description = cleaned.endsWith(".") ? cleaned : `${cleaned}.`;
+  const expected_result = `The workflow should complete successfully as intended.`;
+  const actual_result = cleaned;
+
+  return {
+    insufficient: false,
+    title,
+    module: moduleName,
+    description,
+    expected_result,
+    actual_result,
+  };
+}
 
 export const structureBug = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { rawInput: string }) => inputSchema.parse(data))
   .handler(async ({ data, context }): Promise<StructureBugResult> => {
     const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) {
-      console.error("LOVABLE_API_KEY is not configured");
-      return { ok: false, reason: "ai" };
+
+    let parsed: z.infer<typeof structuredSchema> | null = null;
+
+    if (apiKey) {
+      try {
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-6-astra",
+            reasoning_effort: "low",
+            response_format: { type: "json_object" },
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content: data.rawInput },
+            ],
+          }),
+        });
+
+        if (response.ok) {
+          const payload = (await response.json()) as {
+            choices?: { message?: { content?: string } }[];
+          };
+          const content = payload.choices?.[0]?.message?.content ?? "";
+          const cleaned = content
+            .trim()
+            .replace(/^```(?:json)?/i, "")
+            .replace(/```$/, "")
+            .trim();
+          parsed = structuredSchema.parse(JSON.parse(cleaned));
+        } else {
+          console.error("AI gateway response error", response.status, await response.text());
+        }
+      } catch (error) {
+        console.error("Failed to structure bug with AI, using fallback parser", error);
+      }
     }
 
-    let parsed: z.infer<typeof structuredSchema>;
-    try {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-6-astra",
-          reasoning_effort: "low",
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: data.rawInput },
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("AI gateway error", response.status, await response.text());
-        return { ok: false, reason: "ai" };
-      }
-
-      const payload = (await response.json()) as {
-        choices?: { message?: { content?: string } }[];
-      };
-      const content = payload.choices?.[0]?.message?.content ?? "";
-      const cleaned = content
-        .trim()
-        .replace(/^```(?:json)?/i, "")
-        .replace(/```$/, "")
-        .trim();
-      parsed = structuredSchema.parse(JSON.parse(cleaned));
-    } catch (error) {
-      console.error("Failed to structure bug", error);
-      return { ok: false, reason: "ai" };
+    if (!parsed) {
+      parsed = fallbackStructureBug(data.rawInput);
     }
 
     if (parsed.insufficient || !parsed.title?.trim()) {
@@ -118,7 +190,9 @@ export const structureBug = createServerFn({ method: "POST" })
         actual_result: parsed.actual_result?.trim() || "",
         raw_input: data.rawInput,
       })
-      .select("id, title, module, description, expected_result, actual_result, raw_input, created_at, updated_at")
+      .select(
+        "id, title, module, description, expected_result, actual_result, raw_input, created_at, updated_at",
+      )
       .single();
 
     if (error || !inserted) {

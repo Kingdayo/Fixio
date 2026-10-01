@@ -35,7 +35,7 @@ function Dashboard() {
     { label: "This month", value: bugs.filter((bug) => isSameMonth(bug.created_at)).length },
     { label: "Today", value: bugs.filter((bug) => isToday(bug.created_at)).length },
   ];
-  const recent = bugs.slice(0, 4);
+  const recent = bugs.slice(0, 6);
 
   return (
     <AppShell>
@@ -48,7 +48,7 @@ function Dashboard() {
         </div>
         <Link
           to="/document"
-          className="rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground transition-transform active:scale-95"
+          className="btn-tactile-brand rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground"
         >
           + Document new bug
         </Link>
@@ -56,7 +56,7 @@ function Dashboard() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl bg-card p-5 shadow-card ring-1 ring-border">
+          <div key={stat.label} className="card-3d rounded-2xl p-5">
             <p className="label-eyebrow">{stat.label}</p>
             <p className="mt-2 font-display text-3xl font-bold">{stat.value}</p>
           </div>
@@ -78,13 +78,17 @@ function Dashboard() {
         {isLoading ? (
           <p className="mt-4 text-sm text-muted-foreground">Loading your history…</p>
         ) : recent.length === 0 ? (
-          <div className="mt-4 rounded-2xl bg-card p-6 text-center shadow-card ring-1 ring-border">
+          <div className="card-3d mt-4 rounded-2xl p-6 text-center">
             <p className="text-[15px] font-medium">No bugs documented yet.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Enter your first bug and it will automatically be organized into a professional QA
+              report.
+            </p>
             <Link
               to="/document"
-              className="mt-4 inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
+              className="btn-tactile-brand mt-4 inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
             >
-              Document your first bug
+              Document Your First Bug
             </Link>
           </div>
         ) : (
@@ -94,7 +98,7 @@ function Dashboard() {
                 <Link
                   to="/bugs/$bugId"
                   params={{ bugId: bug.id }}
-                  className="block rounded-2xl bg-card p-5 shadow-card ring-1 ring-border transition-transform active:scale-[0.99]"
+                  className="card-3d card-3d-hover block rounded-2xl p-5"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
