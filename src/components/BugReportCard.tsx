@@ -84,10 +84,15 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
 
   return (
     <>
-      <div className={`card-3d rounded-3xl p-6 sm:p-8 ${animate ? "animate-rise" : ""}`}>
+      <div
+        className={`card-3d card-3d-hover relative overflow-hidden rounded-3xl p-6 sm:p-8 ${animate ? "animate-rise" : ""}`}
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="label-eyebrow">Bug title</p>
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-brand animate-pulse" />
+              <p className="label-eyebrow">Bug report</p>
+            </div>
             {editing ? (
               <input
                 className={`${fieldClass} mt-1.5 font-display text-xl font-bold`}
@@ -95,19 +100,20 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                 onChange={(event) => setDraft({ ...draft, title: event.target.value })}
               />
             ) : (
-              <h2 className="mt-1 font-display text-2xl font-bold leading-tight sm:text-3xl">
+              <h2 className="mt-1 font-display text-2xl font-bold leading-tight tracking-tight sm:text-3xl text-foreground">
                 {display.title}
               </h2>
             )}
           </div>
           {!editing && (
-            <span className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 backdrop-blur-xs px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm">
+              <span className="size-1.5 rounded-full bg-brand" />
               {display.module}
             </span>
           )}
         </div>
 
-        <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 bg-secondary/30 rounded-2xl p-4 sm:p-6 border border-border/60">
           <div>
             <p className="label-eyebrow">Module</p>
             {editing ? (
@@ -117,12 +123,14 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                 onChange={(event) => setDraft({ ...draft, module: event.target.value })}
               />
             ) : (
-              <p className="mt-1 text-[15px] font-medium">{display.module}</p>
+              <p className="mt-1 text-[15px] font-semibold text-foreground">{display.module}</p>
             )}
           </div>
           <div>
-            <p className="label-eyebrow">Date</p>
-            <p className="mt-1 text-[15px] font-medium">{formatBugDate(bug.created_at)}</p>
+            <p className="label-eyebrow">Documented date</p>
+            <p className="mt-1 text-[15px] font-medium text-foreground/90">
+              {formatBugDate(bug.created_at)}
+            </p>
           </div>
           <div className="sm:col-span-2">
             <p className="label-eyebrow">Description</p>
@@ -134,7 +142,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                 onChange={(event) => setDraft({ ...draft, description: event.target.value })}
               />
             ) : (
-              <p className="mt-1 text-[15px] leading-relaxed text-foreground/80">
+              <p className="mt-1 text-[15px] leading-relaxed text-foreground/90">
                 {display.description}
               </p>
             )}
@@ -149,7 +157,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                 onChange={(event) => setDraft({ ...draft, expected_result: event.target.value })}
               />
             ) : (
-              <p className="mt-1 text-[15px] leading-relaxed text-foreground/80">
+              <p className="mt-1 text-[15px] leading-relaxed text-foreground/90">
                 {display.expected_result}
               </p>
             )}
@@ -164,20 +172,20 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                 onChange={(event) => setDraft({ ...draft, actual_result: event.target.value })}
               />
             ) : (
-              <p className="mt-1 text-[15px] leading-relaxed text-foreground/80">
+              <p className="mt-1 text-[15px] leading-relaxed text-foreground/90">
                 {display.actual_result}
               </p>
             )}
           </div>
         </div>
 
-        <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-border pt-5">
+        <div className="mt-6 flex flex-wrap items-center gap-3 pt-2">
           {editing ? (
             <>
               <button
                 onClick={() => void handleSave()}
                 disabled={saving}
-                className="btn-tactile-brand rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-60"
+                className="btn-tactile-brand rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-60 active:scale-95 transition-all"
               >
                 {saving ? "Saving…" : "Save changes"}
               </button>
@@ -186,7 +194,7 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                   setDraft(bug);
                   setEditing(false);
                 }}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="rounded-full px-5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground active:scale-95"
               >
                 Cancel
               </button>
@@ -198,26 +206,26 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
                   setDraft(bug);
                   setEditing(true);
                 }}
-                className="btn-tactile-brand rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
+                className="btn-tactile-brand rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-brand-foreground active:scale-95 transition-all"
               >
                 Edit
               </button>
               <button
                 onClick={() => void handleCopy()}
-                className="btn-tactile-secondary rounded-full bg-secondary px-5 py-2.5 text-sm font-medium text-foreground"
+                className="btn-tactile-secondary rounded-full bg-secondary px-6 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/80 active:scale-95 transition-all"
               >
-                Copy
+                Copy report
               </button>
               <button
                 onClick={() => setDeleteOpen(true)}
-                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
+                className="rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive active:scale-95"
               >
                 Delete
               </button>
               {onDocumentAnother && (
                 <button
                   onClick={onDocumentAnother}
-                  className="btn-tactile-primary rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground sm:ml-auto"
+                  className="btn-tactile-primary rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground active:scale-95 transition-all sm:ml-auto"
                 >
                   + Document another bug
                 </button>
