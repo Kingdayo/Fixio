@@ -70,7 +70,9 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
           <button
             onClick={() => void handleSubmit()}
             disabled={busy}
-            className="btn-tactile-primary rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-70"
+            className={`btn-tactile-primary rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-70 ${
+              busy ? "animate-shimmer-btn cursor-wait" : ""
+            }`}
           >
             {busy ? "Organizing…" : "Document bug"}
           </button>
@@ -88,7 +90,7 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
       </div>
 
       {result && (
-        <section>
+        <section className="animate-scale-in">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">
               Organized report
