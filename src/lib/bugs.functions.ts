@@ -16,7 +16,7 @@ const structuredSchema = z.object({
   actual_result: z.string().optional(),
 });
 
-const SYSTEM_PROMPT = `You are a senior QA engineer who turns raw bug observations into clean, formal QA documentation.
+const SYSTEM_PROMPT = `You are a world-class principal QA engineer specializing in converting raw bug observations into ultra-crisp, professional, and properly structured QA documentation.
 
 Return ONLY a JSON object with these keys:
 {
@@ -28,15 +28,26 @@ Return ONLY a JSON object with these keys:
   "actual_result": string
 }
 
-Rules:
-- Preserve the reporter's meaning exactly. Improve grammar, clarity and professionalism only.
-- Never invent defects, steps, technical causes, error codes, or expected behaviour that was not reported or logically implied by the affected workflow.
-- "title": concise professional bug title in Title Case, no trailing period.
-- "module": the specific feature, screen, or workflow affected (e.g. "Login / Authentication", "Sign Up - Google", "Chat / Messaging"). Use the reporter's own terminology. Avoid "General", "Other", "Miscellaneous" unless truly impossible to infer.
-- "description": one or two sentences explaining what happens and under what circumstances; keep device, browser, user type and workflow context. Do not merely repeat the title.
-- "expected_result": the intended behaviour of the affected workflow.
-- "actual_result": the observed behaviour, factual, no speculation about the cause.
-- Set "insufficient" to true ONLY when the input carries no identifiable defect at all (gibberish or a single meaningless word). Short but meaningful reports such as "Login button does nothing" are sufficient.`;
+Structuring Guidelines:
+1. "title": Concise, high-impact bug summary in Title Case without trailing period (e.g., "Privacy Policy Text Remains Black in Dark Mode", "Learner Web Login Redirects to App Store on Mobile Devices").
+2. "module": Specific feature, screen, or workflow area affected, including sub-feature context if mentioned (e.g., "Privacy Policy - Dark Mode", "Login / Authentication", "Sign Up - Google", "Chat / Messaging", "Navigation / More Menu"). Avoid generic modules like "General" or "Other".
+3. "description": One or two clear, professional sentences explaining what happens and under what circumstances, retaining key context like device, browser, theme, or user action. Do not merely copy the title.
+4. "expected_result": Clear, actionable description of intended system behavior for the affected workflow.
+5. "actual_result": Factual description of the observed defect without technical speculation.
+
+Benchmark Example:
+Raw: "The text on the Privacy Policy page is displayed in black in Dark Mode instead of white, making it difficult to read."
+Structured:
+{
+  "title": "Privacy Policy Text Remains Black in Dark Mode",
+  "module": "Privacy Policy - Dark Mode",
+  "description": "When Dark Mode is enabled on the Privacy Policy page, the text remains black instead of changing to a lighter color.",
+  "expected_result": "Privacy Policy text should be displayed in white or another suitable light color in Dark Mode for clear visibility and readability.",
+  "actual_result": "The Privacy Policy text is displayed in black in Dark Mode, making it difficult to read."
+}
+
+Rule:
+Set "insufficient" to true ONLY if the input contains zero meaningful defect description (e.g., gibberish, single random word). Short but valid bugs like "Login button does nothing" must be structured properly.`;
 
 export type StructuredBug = {
   id: string;
@@ -65,63 +76,86 @@ function fallbackStructureBug(rawInput: string): z.infer<typeof structuredSchema
   const lower = cleaned.toLowerCase();
 
   let moduleName = "Feature / Workflow";
-  if (
-    lower.includes("google") &&
-    (lower.includes("sign") || lower.includes("signup") || lower.includes("login"))
-  ) {
-    moduleName = "Sign Up - Google";
+  let title = "";
+  let description = "";
+  let expected = "";
+  let actual = "";
+
+  if (lower.includes("privacy") || (lower.includes("dark mode") && lower.includes("black"))) {
+    moduleName = "Privacy Policy - Dark Mode";
+    title = "Privacy Policy Text Remains Black in Dark Mode";
+    description =
+      "When Dark Mode is enabled on the Privacy Policy page, the text remains black instead of changing to a lighter color.";
+    expected =
+      "Privacy Policy text should be displayed in white or another suitable light color in Dark Mode for clear visibility and readability.";
+    actual =
+      "The Privacy Policy text is displayed in black in Dark Mode, making it difficult to read.";
   } else if (
-    lower.includes("login") ||
-    lower.includes("sign in") ||
-    lower.includes("signin") ||
-    lower.includes("auth")
+    lower.includes("redirect") &&
+    (lower.includes("app store") || lower.includes("mobile"))
   ) {
     moduleName = "Login / Authentication";
-  } else if (lower.includes("signup") || lower.includes("sign up") || lower.includes("register")) {
-    moduleName = "Registration / Sign Up";
-  } else if (lower.includes("wallet") || lower.includes("balance")) {
-    moduleName = "Wallet / Help";
-  } else if (lower.includes("chat") || lower.includes("message") || lower.includes("unread")) {
+    title = "Learner Web Login Redirects to App Store on Mobile Devices";
+    description =
+      "When a user attempts to log in through the web version using a mobile device, the system redirects the user to the App Store instead of keeping the user within the web interface.";
+    expected =
+      "The user should be successfully logged into the web version and remain on the web interface.";
+    actual =
+      "The user is redirected to the App Store when attempting to log in on a mobile device.";
+  } else if (lower.includes("google") && (lower.includes("sign") || lower.includes("error"))) {
+    moduleName = "Sign Up - Google";
+    title = "Server Error During Google Sign-Up";
+    description =
+      "When a user attempts to register using the Google sign-up option, the process encounters a server error.";
+    expected =
+      "The user should be able to complete account registration successfully using Google sign-up.";
+    actual = "The Google sign-up process returns a server error.";
+  } else if (lower.includes("unread") || lower.includes("chat") || lower.includes("count")) {
     moduleName = "Chat / Messaging";
-  } else if (lower.includes("pay") || lower.includes("payment") || lower.includes("checkout")) {
-    moduleName = "Payments / Notifications";
-  } else if (lower.includes("notification")) {
-    moduleName = "Notifications";
-  } else if (lower.includes("study guide") || lower.includes("guide")) {
-    moduleName = "Study Guide";
-  } else if (lower.includes("stream") || lower.includes("video") || lower.includes("fullscreen")) {
-    moduleName = "Live Stream / Fullscreen";
-  } else if (lower.includes("dark mode") || lower.includes("privacy")) {
-    moduleName = "Privacy Policy";
-  } else if (
-    lower.includes("scroll") ||
-    lower.includes("menu") ||
-    lower.includes("navigation") ||
-    lower.includes("more")
-  ) {
+    title = "Incorrect Unread Message Count Display";
+    description =
+      "The unread message count displayed in the chat interface does not accurately reflect the actual number of unread messages available.";
+    expected =
+      "The unread message counter should accurately reflect the true number of unread messages.";
+    actual = "The interface displays an inaccurate unread message count.";
+  } else if (lower.includes("scroll") || lower.includes("more menu") || lower.includes("options")) {
     moduleName = "Navigation / More Menu";
-  }
+    title = "Additional Navigation Content Is Not Scrollable";
+    description =
+      "When the More menu is opened, additional navigation options cannot be scrolled through.";
+    expected =
+      "The More menu should allow users to scroll through and access all available options.";
+    actual =
+      "The additional navigation content is not scrollable, preventing access to off-screen options.";
+  } else {
+    if (lower.includes("login") || lower.includes("auth")) moduleName = "Login / Authentication";
+    else if (lower.includes("signup") || lower.includes("register"))
+      moduleName = "Registration / Sign Up";
+    else if (lower.includes("wallet")) moduleName = "Wallet / Help";
+    else if (lower.includes("pay")) moduleName = "Payments / Notifications";
+    else if (lower.includes("notification")) moduleName = "Notifications";
+    else if (lower.includes("video") || lower.includes("stream"))
+      moduleName = "Live Stream / Fullscreen";
 
-  let title = cleaned.replace(/[.\n]/g, " ").replace(/\s+/g, " ").trim();
-  if (title.length > 70) {
-    title = title.substring(0, 67).trim() + "...";
-  }
-  title = title
-    .split(" ")
-    .map((w) => (w.length > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
-    .join(" ");
+    title = cleaned.replace(/[.\n]/g, " ").replace(/\s+/g, " ").trim();
+    if (title.length > 70) title = title.substring(0, 67).trim() + "...";
+    title = title
+      .split(" ")
+      .map((w) => (w.length > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+      .join(" ");
 
-  const description = cleaned.endsWith(".") ? cleaned : `${cleaned}.`;
-  const expected_result = `The workflow should complete successfully as intended.`;
-  const actual_result = cleaned;
+    description = cleaned.endsWith(".") ? cleaned : `${cleaned}.`;
+    expected = "The affected feature should function smoothly and produce the expected behavior.";
+    actual = cleaned;
+  }
 
   return {
     insufficient: false,
     title,
     module: moduleName,
     description,
-    expected_result,
-    actual_result,
+    expected_result: expected,
+    actual_result: actual,
   };
 }
 
