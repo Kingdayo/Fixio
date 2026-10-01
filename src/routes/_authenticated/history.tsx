@@ -3,6 +3,13 @@ import { useMemo, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { OrbitalLoader } from "@/components/OrbitalLoader";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useBugs } from "@/hooks/useBugs";
 import { formatBugDate, groupBugsByDay, isSameMonth, isToday } from "@/lib/bug-utils";
 
@@ -93,39 +100,90 @@ function HistoryPage() {
           className={`${controlClass} w-full`}
         />
         <div className="flex flex-wrap gap-3">
-          <select
-            value={module}
-            onChange={(event) => setModule(event.target.value)}
-            className={controlClass}
-            aria-label="Filter by module"
-          >
-            <option value="all">All modules</option>
-            {modules.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <select
-            value={range}
-            onChange={(event) => setRange(event.target.value as Range)}
-            className={controlClass}
-            aria-label="Filter by date"
-          >
-            <option value="all">Any date</option>
-            <option value="today">Today</option>
-            <option value="month">This month</option>
-          </select>
-          <select
-            value={sort}
-            onChange={(event) => setSort(event.target.value as Sort)}
-            className={controlClass}
-            aria-label="Sort bugs"
-          >
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="edited">Recently edited</option>
-          </select>
+          <Select value={module} onValueChange={setModule}>
+            <SelectTrigger
+              className="h-11 min-w-[150px] rounded-xl border-2 border-border/80 bg-card px-4 text-sm font-medium text-foreground hover:border-brand/60 focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs cursor-pointer"
+              aria-label="Filter by module"
+            >
+              <SelectValue placeholder="All modules" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-2 border-border/80 bg-card p-1.5 shadow-elevated text-foreground">
+              <SelectItem
+                value="all"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                All modules
+              </SelectItem>
+              {modules.map((item) => (
+                <SelectItem
+                  key={item}
+                  value={item}
+                  className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+                >
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={range} onValueChange={(val) => setRange(val as Range)}>
+            <SelectTrigger
+              className="h-11 min-w-[130px] rounded-xl border-2 border-border/80 bg-card px-4 text-sm font-medium text-foreground hover:border-brand/60 focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs cursor-pointer"
+              aria-label="Filter by date"
+            >
+              <SelectValue placeholder="Any date" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-2 border-border/80 bg-card p-1.5 shadow-elevated text-foreground">
+              <SelectItem
+                value="all"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                Any date
+              </SelectItem>
+              <SelectItem
+                value="today"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                Today
+              </SelectItem>
+              <SelectItem
+                value="month"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                This month
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sort} onValueChange={(val) => setSort(val as Sort)}>
+            <SelectTrigger
+              className="h-11 min-w-[140px] rounded-xl border-2 border-border/80 bg-card px-4 text-sm font-medium text-foreground hover:border-brand/60 focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs cursor-pointer"
+              aria-label="Sort bugs"
+            >
+              <SelectValue placeholder="Newest first" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-2 border-border/80 bg-card p-1.5 shadow-elevated text-foreground">
+              <SelectItem
+                value="newest"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                Newest first
+              </SelectItem>
+              <SelectItem
+                value="oldest"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                Oldest first
+              </SelectItem>
+              <SelectItem
+                value="edited"
+                className="cursor-pointer rounded-xl py-2.5 text-sm font-medium text-foreground focus:bg-brand/10 focus:text-brand"
+              >
+                Recently edited
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
           {filtersActive && (
             <button
               onClick={() => {
