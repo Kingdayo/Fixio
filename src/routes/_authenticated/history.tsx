@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 import { useBugs } from "@/hooks/useBugs";
 import { formatBugDate, groupBugsByDay, isSameMonth, isToday } from "@/lib/bug-utils";
 
@@ -142,7 +143,7 @@ function HistoryPage() {
       </div>
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-muted-foreground">Loading your history…</p>
+        <OrbitalLoader label="Loading bug history…" sublabel="Fetching all QA records" />
       ) : bugs.length === 0 ? (
         <div className="card-3d mt-8 rounded-2xl p-8 text-center">
           <p className="text-[15px] font-medium">No bugs documented yet.</p>

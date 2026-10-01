@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
 import { useProfile } from "@/hooks/useProfile";
 import { initialsFrom } from "@/lib/bug-utils";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +25,7 @@ const navItems = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const { data: profile } = useProfile(user?.id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -104,7 +105,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
-        {children}
+        {sessionLoading ? (
+          <OrbitalLoader label="Loading Quill…" sublabel="Initializing session" />
+        ) : (
+          children
+        )}
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card md:hidden">
