@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { structureBug } from "@/lib/bugs.functions";
 import type { Bug } from "@/lib/bug-utils";
 import { BugReportCard } from "@/components/BugReportCard";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 
 export function BugComposer({ heading = "Document a new bug" }: { heading?: string }) {
   const [raw, setRaw] = useState("");
@@ -75,25 +76,10 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
           {/* Unique Animated Loading Overlay */}
           {busy && (
             <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-card/90 backdrop-blur-md animate-scale-in z-10 p-6 text-center shadow-lg">
-              <div className="relative grid size-16 place-items-center">
-                {/* Pulsing ring background */}
-                <div className="absolute inset-0 rounded-full bg-brand/20 animate-pulse-ring" />
-                {/* Orbiting indicator */}
-                <div className="absolute size-full animate-orbit-quill">
-                  <div className="size-3.5 rounded-full bg-brand shadow-[0_0_12px_oklch(0.679_0.2_38)]" />
-                </div>
-                {/* Core Q badge */}
-                <div className="relative grid size-10 place-items-center rounded-xl bg-brand text-brand-foreground font-display font-bold text-lg shadow-md animate-bounce">
-                  Q
-                </div>
-              </div>
-
-              <p className="mt-4 font-display text-base font-semibold text-foreground tracking-tight">
-                Structuring QA Bug Report…
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground animate-pulse">
-                Extracting titles, modules, expectations, and factual context
-              </p>
+              <OrbitalLoader
+                label="Structuring QA Bug Report…"
+                sublabel="Extracting titles, modules, expectations, and factual context"
+              />
             </div>
           )}
         </div>

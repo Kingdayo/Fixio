@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-r
 
 import { AppShell } from "@/components/AppShell";
 import { BugReportCard } from "@/components/BugReportCard";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 import { useBug } from "@/hooks/useBugs";
 
 export const Route = createFileRoute("/_authenticated/bugs/$bugId")({
@@ -33,7 +34,7 @@ function BugDetail() {
       </Link>
 
       {isLoading ? (
-        <p className="mt-6 text-sm text-muted-foreground">Loading report…</p>
+        <OrbitalLoader label="Loading bug report…" sublabel="Retrieving QA details" />
       ) : !bug ? (
         <p className="mt-6 rounded-2xl bg-card p-8 text-center text-[15px] font-medium shadow-card ring-1 ring-border">
           This bug report is no longer available.

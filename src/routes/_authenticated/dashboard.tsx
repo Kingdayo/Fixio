@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { AppShell } from "@/components/AppShell";
 import { BugComposer } from "@/components/BugComposer";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 import { useBugs } from "@/hooks/useBugs";
 import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
@@ -76,7 +77,7 @@ function Dashboard() {
         </div>
 
         {isLoading ? (
-          <p className="mt-4 text-sm text-muted-foreground">Loading your history…</p>
+          <OrbitalLoader label="Loading your bugs…" sublabel="Fetching recent QA records" />
         ) : recent.length === 0 ? (
           <div className="card-3d mt-4 rounded-2xl p-6 text-center">
             <p className="text-[15px] font-medium">No bugs documented yet.</p>
