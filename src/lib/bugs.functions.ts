@@ -123,7 +123,12 @@ function fallbackStructureBug(rawInput: string): z.infer<typeof structuredSchema
     actual =
       "The additional navigation content is not scrollable, preventing access to off-screen options.";
   } else {
-    if (lower.includes("login") || lower.includes("auth")) moduleName = "Login / Authentication";
+    if (lower.includes("save") || lower.includes("tutor") || lower.includes("subject"))
+      moduleName = "Saved Items - Tutor";
+    else if (lower.includes("leaderboard") || lower.includes("space"))
+      moduleName = "Leaderboard - Formatting";
+    else if (lower.includes("login") || lower.includes("auth"))
+      moduleName = "Login / Authentication";
     else if (lower.includes("signup") || lower.includes("register"))
       moduleName = "Registration / Sign Up";
     else if (lower.includes("wallet")) moduleName = "Wallet / Help";
@@ -132,16 +137,32 @@ function fallbackStructureBug(rawInput: string): z.infer<typeof structuredSchema
     else if (lower.includes("video") || lower.includes("stream"))
       moduleName = "Live Stream / Fullscreen";
 
-    title = cleaned.replace(/[.\n]/g, " ").replace(/\s+/g, " ").trim();
-    if (title.length > 70) title = title.substring(0, 67).trim() + "...";
-    title = title
-      .split(" ")
+    // Clean first person words
+    let baseText = cleaned
+      .replace(
+        /^(when i|i noticed that|i noticed|there seems to be|basically|for some reason)\s+/i,
+        "",
+      )
+      .trim();
+    if (!baseText) baseText = cleaned;
+
+    // Build concise Title
+    const firstSentence = baseText.split(/[.!?\n]/)[0] || baseText;
+    let rawTitle = firstSentence.replace(/don't/gi, "Do Not").replace(/can't/gi, "Cannot");
+    if (rawTitle.length > 60) {
+      rawTitle = rawTitle.slice(0, 60).replace(/\s+\S*$/, "");
+    }
+    title = rawTitle
+      .split(/\s+/)
       .map((w) => (w.length > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
       .join(" ");
 
-    description = cleaned.endsWith(".") ? cleaned : `${cleaned}.`;
-    expected = "The affected feature should function smoothly and produce the expected behavior.";
-    actual = cleaned;
+    description = `The system exhibits an issue where ${baseText.charAt(0).toLowerCase() + baseText.slice(1)}${
+      baseText.endsWith(".") ? "" : "."
+    }`;
+    expected =
+      "The feature should function correctly and display all data or formatting accurately.";
+    actual = baseText.endsWith(".") ? baseText : `${baseText}.`;
   }
 
   return {
