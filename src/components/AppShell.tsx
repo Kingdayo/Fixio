@@ -61,13 +61,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           </div>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1.5 md:flex">
             {navItems.slice(0, 3).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                activeProps={{ className: "bg-secondary text-foreground" }}
+                className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground active:scale-95"
+                activeProps={{ className: "bg-secondary text-foreground font-semibold shadow-xs" }}
               >
                 {item.label}
               </Link>
@@ -103,7 +103,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+      <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
         {children}
       </main>
 
