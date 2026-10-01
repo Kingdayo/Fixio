@@ -31,6 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [navigating, setNavigating] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const routerState = useRouterState({
     select: (s) => ({
@@ -40,9 +41,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     }),
   });
 
-  // Clear navigating indicator when location changes
+  // Show page loading animation whenever location changes or component mounts
   useEffect(() => {
-    setNavigating(false);
+    setPageLoading(true);
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+      setNavigating(false);
+    }, 450);
+    return () => clearTimeout(timer);
   }, [routerState.location]);
 
   function handleTabClick() {
@@ -132,10 +138,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
-        {sessionLoading ? (
-          <OrbitalLoader label="Loading Fixio…" sublabel="Initializing session" />
-        ) : routerState.isLoading || routerState.status === "pending" || navigating ? (
-          <OrbitalLoader label="Switching view…" sublabel="Loading content" />
+        {sessionLoading ||
+        pageLoading ||
+        routerState.isLoading ||
+        routerState.status === "pending" ||
+        navigating ? (
+          <OrbitalLoader
+            label="Loading Fixio…"
+            sublabel="Preparing page content"
+            className="min-h-[350px]"
+          />
         ) : (
           children
         )}
