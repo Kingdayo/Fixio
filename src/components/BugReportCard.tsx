@@ -87,10 +87,16 @@ export function BugReportCard({ bug, onDocumentAnother, onDeleted, animate }: Pr
       <div
         className={`card-3d card-3d-hover relative overflow-hidden rounded-3xl p-6 sm:p-8 ${animate ? "animate-rise" : ""}`}
       >
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        {/* Bubbly background glow */}
+        <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-brand/10 blur-2xl animate-bubble-float" />
+
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-brand animate-pulse" />
+              <span className="relative flex size-2.5 items-center justify-center">
+                <span className="absolute size-3 rounded-full bg-brand/40 animate-ping" />
+                <span className="size-2 rounded-full bg-brand" />
+              </span>
               <p className="label-eyebrow">Bug report</p>
             </div>
             {editing ? (
