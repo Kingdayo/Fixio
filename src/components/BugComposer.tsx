@@ -16,32 +16,42 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
   const queryClient = useQueryClient();
 
   async function handleSubmit() {
+    if (busy) return;
+
     if (!raw.trim()) {
       toast.error("Please describe the bug before continuing.");
       return;
     }
+
     setBusy(true);
     try {
       const outcome = await run({ data: { rawInput: raw } });
       if (!outcome.ok) {
-        if (outcome.reason === "insufficient") {
+        if (outcome.reason === "empty" || outcome.reason === "insufficient") {
           toast.error(
             "Please provide a little more detail about the issue so it can be documented accurately.",
           );
+        } else if (outcome.reason === "rate_limit") {
+          toast.error(
+            "AI processing is temporarily unavailable. Quota or rate limit reached. Please try again later.",
+          );
+        } else if (outcome.reason === "missing_key") {
+          toast.error("AI processing is temporarily unavailable. Please try again later.");
         } else if (outcome.reason === "save") {
-          toast.error("Your bug could not be saved. Please try again.");
+          toast.error("Bug processing succeeded, but saving failed. Please try again.");
         } else {
-          toast.error("The bug could not be organized right now. Please try again.");
+          toast.error("Unable to process the bug right now. Please try again.");
         }
         return;
       }
+
       setResult(outcome.bug as Bug);
       setRaw("");
       await queryClient.invalidateQueries({ queryKey: ["bugs"] });
       toast.success("Bug documented successfully. Saved to your bug history.");
     } catch (error) {
-      console.error(error);
-      toast.error("The bug could not be organized right now. Please try again.");
+      console.error("Bug processing failed:", error);
+      toast.error("Unable to process the bug right now. Please try again.");
     } finally {
       setBusy(false);
     }
