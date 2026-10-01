@@ -57,9 +57,13 @@ function Dashboard() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat) => (
-          <div key={stat.label} className="card-3d rounded-2xl p-5">
+          <div
+            key={stat.label}
+            className="card-3d card-3d-hover rounded-2xl p-5 relative overflow-hidden group"
+          >
+            <div className="pointer-events-none absolute -top-10 -right-10 size-28 rounded-full bg-brand/5 blur-xl group-hover:bg-brand/15 transition-all duration-300 animate-bubble-float" />
             <p className="label-eyebrow">{stat.label}</p>
-            <p className="mt-2 font-display text-3xl font-bold">{stat.value}</p>
+            <p className="mt-2 font-display text-3xl font-bold tracking-tight">{stat.value}</p>
           </div>
         ))}
       </div>

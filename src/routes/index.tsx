@@ -35,11 +35,15 @@ function Landing() {
   }, [loading, user, navigate]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
+    <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* Live motion background orbs */}
+      <div className="pointer-events-none fixed top-12 left-12 size-96 rounded-full glow-orb-brand animate-float-drift z-0" />
+      <div className="pointer-events-none fixed bottom-16 right-16 size-80 rounded-full glow-orb-info animate-float-drift z-0 [animation-delay:-5s]" />
+
+      <header className="relative z-10 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
           <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-brand-foreground">
+            <span className="grid size-8 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-brand-foreground shadow-sm animate-glow-bubble">
               F
             </span>
             <span className="font-display text-lg font-semibold tracking-tight">Fixio</span>
