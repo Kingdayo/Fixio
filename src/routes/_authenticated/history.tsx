@@ -30,7 +30,7 @@ type Sort = "newest" | "oldest" | "edited";
 type Range = "all" | "today" | "month";
 
 const controlClass =
-  "rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand";
+  "rounded-xl border-2 border-border/80 bg-card px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 hover:border-brand/60 focus:border-brand focus:ring-2 focus:ring-brand/20 shadow-xs cursor-pointer";
 
 function HistoryPage() {
   const { data: bugs = [], isLoading } = useBugs();

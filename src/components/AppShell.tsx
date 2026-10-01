@@ -122,7 +122,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     Profile
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => void handleSignOut()}>Log out</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => void handleSignOut()}>
+                  Log out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
