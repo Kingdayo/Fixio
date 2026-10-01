@@ -78,7 +78,7 @@ function HistoryPage() {
         </div>
         <Link
           to="/document"
-          className="rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground transition-transform active:scale-95"
+          className="btn-tactile-brand rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground"
         >
           + Document new bug
         </Link>
@@ -144,19 +144,40 @@ function HistoryPage() {
       {isLoading ? (
         <p className="mt-8 text-sm text-muted-foreground">Loading your history…</p>
       ) : bugs.length === 0 ? (
-        <div className="mt-8 rounded-2xl bg-card p-8 text-center shadow-card ring-1 ring-border">
+        <div className="card-3d mt-8 rounded-2xl p-8 text-center">
           <p className="text-[15px] font-medium">No bugs documented yet.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Enter your first bug and it will automatically be organized into a professional QA
+            report.
+          </p>
           <Link
             to="/document"
-            className="mt-4 inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
+            className="btn-tactile-brand mt-4 inline-flex rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground"
           >
-            Document your first bug
+            Document Your First Bug
           </Link>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="mt-8 rounded-2xl bg-card p-8 text-center text-[15px] font-medium shadow-card ring-1 ring-border">
-          {query.trim() ? "No matching bugs found." : "No bugs match the selected filters."}
-        </p>
+        <div className="card-3d mt-8 rounded-2xl p-8 text-center">
+          <p className="text-[15px] font-medium">
+            {query.trim()
+              ? "No bugs found matching your search."
+              : "No bugs match the selected filters."}
+          </p>
+          {filtersActive && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setModule("all");
+                setRange("all");
+                setSort("newest");
+              }}
+              className="mt-3 text-sm font-semibold text-brand underline"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
       ) : (
         <div className="mt-8 space-y-8">
           {groups.map((group) => (
@@ -165,6 +186,9 @@ function HistoryPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {group.label}
                 </h2>
+                <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                  {group.bugs.length} {group.bugs.length === 1 ? "bug" : "bugs"}
+                </span>
                 <span className="h-px flex-1 bg-border" />
               </div>
               <ul className="mt-3 space-y-3">
@@ -173,7 +197,7 @@ function HistoryPage() {
                     <Link
                       to="/bugs/$bugId"
                       params={{ bugId: bug.id }}
-                      className="block rounded-2xl bg-card p-5 shadow-card ring-1 ring-border transition-transform active:scale-[0.99]"
+                      className="card-3d card-3d-hover block rounded-2xl p-5"
                     >
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold">
