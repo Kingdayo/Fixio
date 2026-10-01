@@ -237,6 +237,33 @@
   }
 }
 
+@keyframes bubbleFloat {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-12px) scale(1.08) rotate(5deg);
+  }
+  66% {
+    transform: translateY(6px) scale(0.95) rotate(-3deg);
+  }
+}
+
+@keyframes glowBubblePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px 2px oklch(0.679 0.2 38 / 0.4),
+      0 0 30px 6px oklch(0.679 0.2 38 / 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 25px 6px oklch(0.679 0.2 38 / 0.7),
+      0 0 45px 12px oklch(0.679 0.2 38 / 0.3);
+  }
+}
+
 @keyframes writeStroke {
   0%,
   100% {
@@ -336,6 +363,30 @@
 
 @utility animate-pulse-ring {
   animation: pulseRing 1.8s ease-in-out infinite;
+}
+
+@utility animate-bubble-float {
+  animation: bubbleFloat 6s ease-in-out infinite;
+}
+
+@utility animate-glow-bubble {
+  animation: glowBubblePulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@utility glow-orb-brand {
+  background: radial-gradient(circle, oklch(0.679 0.2 38 / 0.22) 0%, oklch(0.679 0.2 38 / 0) 70%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+@utility glow-orb-info {
+  background: radial-gradient(
+    circle,
+    oklch(0.573 0.213 264 / 0.2) 0%,
+    oklch(0.573 0.213 264 / 0) 70%
+  );
+  filter: blur(28px);
+  pointer-events: none;
 }
 
 @utility btn-tactile-brand {

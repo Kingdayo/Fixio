@@ -50,12 +50,14 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
   return (
     <div className="space-y-8">
       <div className="card-3d relative overflow-hidden rounded-3xl p-6 sm:p-8">
-        {/* Subtle accent backdrop decoration */}
-        <div className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-brand/5 blur-3xl transition-opacity group-hover:opacity-100" />
+        {/* Glowing bubbly backdrop decoration */}
+        <div className="pointer-events-none absolute -top-20 -right-20 size-60 rounded-full bg-brand/10 blur-2xl animate-bubble-float" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-info/10 blur-2xl animate-bubble-float [animation-delay:-2.5s]" />
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className="grid size-7 place-items-center rounded-lg bg-brand/10 text-brand shadow-sm">
-            <span className="block size-3 rounded-xs bg-brand animate-pulse" />
+        <div className="relative z-10 flex flex-wrap items-center gap-2.5">
+          <span className="relative grid size-7 place-items-center rounded-lg bg-brand/10 text-brand shadow-sm">
+            <span className="absolute size-4 rounded-full bg-brand/20 animate-ping" />
+            <span className="block size-3 rounded-full bg-brand animate-pulse" />
           </span>
           <h2 className="font-display text-xl font-bold tracking-tight">{heading}</h2>
           <span className="ml-auto rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground shadow-xs">
