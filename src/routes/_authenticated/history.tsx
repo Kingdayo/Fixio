@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/history")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: HistoryPage;
+  component: HistoryPage,
 });
 
 type Sort = "newest" | "oldest" | "edited";
