@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { History, Home, PenLine, User } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/useSession";
@@ -30,32 +30,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile } = useProfile(user?.id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [navigating, setNavigating] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
-
   const routerState = useRouterState({
     select: (s) => ({
       isLoading: s.isLoading,
-      status: s.status,
-      location: s.location.pathname,
     }),
   });
-
-  // Show page loading animation whenever location changes or component mounts
-  useEffect(() => {
-    setPageLoading(true);
-    const timer = setTimeout(() => {
-      setPageLoading(false);
-      setNavigating(false);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, [routerState.location]);
-
-  function handleTabClick() {
-    setNavigating(true);
-    // Auto timeout fallback
-    setTimeout(() => setNavigating(false), 800);
-  }
 
   const name = profile?.name || user?.user_metadata?.["name"] || "";
   const email = profile?.email || user?.email || "";
@@ -99,7 +78,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.to}
                 to={item.to}
-                onClick={handleTabClick}
                 className="relative rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground active:scale-95 cursor-pointer"
                 activeProps={{ className: "bg-secondary text-foreground font-semibold shadow-xs" }}
               >
@@ -128,7 +106,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild onClick={handleTabClick}>
+                <DropdownMenuItem asChild>
                   <Link to="/profile" className="cursor-pointer">
                     Profile
                   </Link>
@@ -143,11 +121,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
-        {sessionLoading ||
-        pageLoading ||
-        routerState.isLoading ||
-        routerState.status === "pending" ||
-        navigating ? (
+        {sessionLoading || routerState.isLoading ? (
           <OrbitalLoader
             label="Loading Fixio…"
             sublabel="Preparing page content"
@@ -164,7 +138,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.to}
               to={item.to}
-              onClick={handleTabClick}
               className="flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] font-medium text-muted-foreground cursor-pointer"
               activeProps={{ className: "text-brand" }}
             >
