@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, it, beforeEach, afterEach, mock } from "bun:test";
 import { generateQAWithGemini, geminiOutputSchema, SYSTEM_PROMPT } from "./bugs.functions";
 
@@ -81,7 +82,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
           "Users should be able to complete registration successfully through the Google sign-up option.",
         actualResult: "A server error is displayed during Google sign-up.",
       });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const result = await generateQAWithGemini(
       "Google sign up gives a server error when I try to create an account.",
@@ -132,7 +133,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
           "The More menu should allow users to scroll through all available options.",
         actualResult: "The additional navigation content is not scrollable.",
       });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const result = await generateQAWithGemini(
       "The More button opens extra navigation options but I can't scroll down.",
@@ -151,7 +152,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
         JSON.stringify({ error: { message: "Resource has been exhausted (e.g. check quota)." } }),
         { status: 429, headers: { "Content-Type": "application/json" } },
       );
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const result = await generateQAWithGemini("Test bug description");
 
@@ -176,7 +177,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
 
     globalThis.fetch = mock(async () => {
       return new Response("Internal Server Error", { status: 500 });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const result = await generateQAWithGemini("Test input");
 
