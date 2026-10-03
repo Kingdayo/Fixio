@@ -17,48 +17,25 @@ export const geminiOutputSchema = z.object({
 
 export type GeminiQAOutput = z.infer<typeof geminiOutputSchema>;
 
-export const SYSTEM_PROMPT = `You are an expert software QA engineer and professional software defect-report writer.
+export const SYSTEM_PROMPT = `You are an expert software QA engineer and professional defect-report writer.
 
 Your task is to transform raw bug observations into concise, accurate, professional QA documentation.
 
-Do not simply paraphrase the user's input.
+Do not simply paraphrase or rewrite the input as narrative text.
 
-Analyze the reported issue and restructure it into a useful defect report.
+Analyze the reported defect and extract structured fields:
 
-Return exactly these fields:
-
-bug
-module
-description
-expectedResult
-actualResult
+bug: A concise, professional defect title identifying the exact problem (e.g. "Server Error 500 During Google Sign-Up").
+module: The specific feature, page, workflow, or component affected (e.g. "Authentication - Google Sign-Up").
+description: Explains the defect context and impact clearly without repeating the Bug title or using first-person pronouns.
+expectedResult: Describes the intended correct system behavior clearly.
+actualResult: Describes the observed behavior preserving exact error codes, error messages, values, devices, and numerical evidence.
 
 Rules:
-
-1. Bug must be a concise professional defect title that identifies the actual problem.
-2. Module must identify the most specific reasonable feature, page, workflow, or functional area affected.
-3. Description must explain the issue and its relevant context without simply repeating the Bug title.
-4. Expected Result must describe the intended correct behavior.
-5. Actual Result must describe what actually happened.
-6. Remove unnecessary words and repetition.
-7. Remove first-person language.
-8. Use professional QA terminology.
-9. Preserve important contextual information such as device, operating system, browser, user type, account type, page, screen, button, workflow, mode, error message, displayed value, or exact count when supplied.
-10. Do not invent technical causes.
-11. Do not invent error codes.
-12. Do not invent root causes.
-13. Do not invent reproduction steps.
-14. Do not invent severity.
-15. Do not invent priority.
-16. Do not introduce information that was not provided or reasonably implied.
-17. Keep the report concise.
-18. Make each field serve a different purpose.
-19. Do not repeat the same sentence across Description, Expected Result, and Actual Result.
-20. Preserve exact values and messages when they are relevant evidence.
-21. The final result should be shorter and clearer than the original observation whenever possible without removing important information.
-22. Treat the user's input as raw QA evidence, not as text that should merely be rewritten.
-
-Return only the requested structured fields.`;
+1. Output MUST be a valid JSON object with keys: "bug", "module", "description", "expectedResult", "actualResult".
+2. Remove first-person language ("I", "my", "we").
+3. Do not invent technical root causes, reproduction steps, or priorities not provided in the input.
+4. Keep the report concise, professional, and clear.`;
 
 export type StructuredBug = {
   id: string;
@@ -90,10 +67,7 @@ function cleanResponseText(text: string): string {
     .trim();
 }
 
-function getGeminiApiKey(): string | undefined {
-  // Server-side only: read the key from the runtime environment at request time
-  // so secrets saved in Lovable Secrets take effect without a rebuild.
-  // Access process.env dynamically via runtime global to avoid Vite static replacement during build.
+function getRuntimeEnvVar(key: string): string | undefined {
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const runtimeEnv =
     typeof globalThis !== "undefined" && (globalThis as any).process?.env
@@ -103,20 +77,24 @@ function getGeminiApiKey(): string | undefined {
         : {};
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  const key =
-    runtimeEnv["GEMINI_API_KEY"] ||
-    runtimeEnv["GOOGLE_API_KEY"] ||
-    process.env["GEMINI_API_KEY"] ||
-    process.env["GOOGLE_API_KEY"];
+  const val = runtimeEnv[key] || (typeof process !== "undefined" ? process[key] : undefined);
+  return typeof val === "string" && val.trim() ? val.trim() : undefined;
+}
 
-  return typeof key === "string" && key.trim() ? key.trim() : undefined;
+function getGeminiApiKey(): string | undefined {
+  return getRuntimeEnvVar("GEMINI_API_KEY") || getRuntimeEnvVar("GOOGLE_API_KEY");
+}
+
+function getProxyApiUrl(): string {
+  return (
+    getRuntimeEnvVar("AI_PROXY_URL") ||
+    getRuntimeEnvVar("FREE_AI_PROXY_URL") ||
+    "https://text.pollinations.ai/v1/chat/completions"
+  );
 }
 
 /**
- * Executes AI generation exclusively using Google Gemini API (gemini-3.5-flash-lite).
- */
-/**
- * Intelligent keyless QA report generator that extracts structured defect fields directly
+ * Keyless QA report generator that extracts structured defect fields directly
  * from raw user observations without requiring any API keys or external services.
  */
 export function generateQAWithKeyless(rawInput: string): GeminiQAOutput {
@@ -125,7 +103,7 @@ export function generateQAWithKeyless(rawInput: string): GeminiQAOutput {
   // Extract page/feature/context for module detection
   let moduleName = "General / Core UI";
 
-  if (/login|log in|sign in|auth/i.test(text)) {
+  if (/login|logging|log in|sign in|auth/i.test(text)) {
     moduleName = "Authentication - Login";
   } else if (/signup|sign up|register/i.test(text)) {
     moduleName = "Authentication - Registration";
@@ -179,135 +157,175 @@ export function generateQAWithKeyless(rawInput: string): GeminiQAOutput {
 }
 
 /**
- * Executes AI generation using Gemini if an API key is available, or seamlessly falls back
- * to the keyless QA engine so bug documentation never fails or blocks users.
+ * Executes AI generation using a free public AI API proxy as the primary model handler.
  */
-export async function generateQAWithGemini(rawInput: string): Promise<AIQAFetchResult> {
-  const geminiKey = getGeminiApiKey();
-
-  // If no Gemini API key is configured, seamlessly use keyless QA generation
-  if (!geminiKey) {
-    const fallbackOutput = generateQAWithKeyless(rawInput);
-    return { ok: true, data: fallbackOutput };
-  }
-
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
+export async function generateQAWithPublicProxy(rawInput: string): Promise<AIQAFetchResult> {
+  const proxyEndpoint = getProxyApiUrl();
 
   const payload = {
-    system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }],
-    },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `Raw Bug Observation:\n${rawInput}` }],
-      },
+    model: "openai-fast",
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: `Raw Bug Observation:\n${rawInput}` },
     ],
-    generationConfig: {
-      response_mime_type: "application/json",
-      response_schema: {
-        type: "OBJECT",
-        properties: {
-          bug: { type: "STRING" },
-          module: { type: "STRING" },
-          description: { type: "STRING" },
-          expectedResult: { type: "STRING" },
-          actualResult: { type: "STRING" },
-        },
-        required: ["bug", "module", "description", "expectedResult", "actualResult"],
-      },
-    },
-  };
-
-  const executeRequest = async (retryMessage?: string) => {
-    const body = retryMessage
-      ? {
-          ...payload,
-          contents: [
-            ...payload.contents,
-            {
-              role: "user",
-              parts: [{ text: retryMessage }],
-            },
-          ],
-        }
-      : payload;
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    return response;
+    temperature: 0.2,
   };
 
   try {
-    let response = await executeRequest();
-
-    if (response.status === 429 || response.status === 403) {
-      const errText = await response.text();
-      if (
-        errText.toLowerCase().includes("quota") ||
-        errText.toLowerCase().includes("rate limit") ||
-        response.status === 429
-      ) {
-        return { ok: false, reason: "rate_limit" };
-      }
-    }
-
-    if (!response.ok) {
-      console.error("Gemini API error:", response.status);
-      return { ok: false, reason: "ai_error" };
-    }
-
-    const jsonPayload = (await response.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-    };
-    const text = jsonPayload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-
-    if (text) {
-      const cleaned = cleanResponseText(text);
-      try {
-        const parsed = geminiOutputSchema.parse(JSON.parse(cleaned));
-        return { ok: true, data: parsed };
-      } catch {
-        console.warn(
-          "Initial Gemini response schema parsing failed. Attempting 1 controlled retry...",
-        );
-      }
-    }
-
-    // Attempt 1 retry if parsing failed or text was empty
-    response = await executeRequest(
-      "Your previous output did not match the required JSON schema. Please return ONLY a valid JSON object with keys: bug, module, description, expectedResult, actualResult.",
-    );
+    const response = await fetch(proxyEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Fixio-QA-App/1.0",
+      },
+      body: JSON.stringify(payload),
+    });
 
     if (response.status === 429 || response.status === 403) {
       return { ok: false, reason: "rate_limit" };
     }
 
     if (!response.ok) {
+      console.error("Public AI API proxy returned error status:", response.status);
       return { ok: false, reason: "ai_error" };
     }
 
-    const retryPayload = (await response.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    const json = (await response.json()) as {
+      choices?: { message?: { content?: string } }[];
     };
-    const retryText = retryPayload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
-    if (retryText) {
-      const cleanedRetry = cleanResponseText(retryText);
-      const parsedRetry = geminiOutputSchema.parse(JSON.parse(cleanedRetry));
-      return { ok: true, data: parsedRetry };
+    const content = json.choices?.[0]?.message?.content ?? "";
+    if (content) {
+      const cleaned = cleanResponseText(content);
+      const parsed = geminiOutputSchema.parse(JSON.parse(cleaned));
+      return { ok: true, data: parsed };
     }
 
     return { ok: false, reason: "ai_error" };
   } catch (err) {
-    console.error("Gemini API request exception, using keyless fallback:", err);
-    const fallbackOutput = generateQAWithKeyless(rawInput);
-    return { ok: true, data: fallbackOutput };
+    console.error("Public AI API proxy exception:", err);
+    return { ok: false, reason: "ai_error" };
   }
+}
+
+/**
+ * Process raw bug inputs into structured QA documentation using free public AI API proxy as primary,
+ * falling back to Gemini or keyless generator engine if the proxy fails or is unavailable.
+ */
+export async function generateQAWithGemini(rawInput: string): Promise<AIQAFetchResult> {
+  // Primary processor: Free public AI API proxy
+  const proxyResult = await generateQAWithPublicProxy(rawInput);
+  if (proxyResult.ok) {
+    return proxyResult;
+  }
+
+  // Fallback 1: Gemini API if key is set
+  const geminiKey = getGeminiApiKey();
+  if (geminiKey) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
+
+    const payload = {
+      system_instruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `Raw Bug Observation:\n${rawInput}` }],
+        },
+      ],
+      generationConfig: {
+        response_mime_type: "application/json",
+        response_schema: {
+          type: "OBJECT",
+          properties: {
+            bug: { type: "STRING" },
+            module: { type: "STRING" },
+            description: { type: "STRING" },
+            expectedResult: { type: "STRING" },
+            actualResult: { type: "STRING" },
+          },
+          required: ["bug", "module", "description", "expectedResult", "actualResult"],
+        },
+      },
+    };
+
+    const executeRequest = async (retryMessage?: string) => {
+      const body = retryMessage
+        ? {
+            ...payload,
+            contents: [
+              ...payload.contents,
+              {
+                role: "user",
+                parts: [{ text: retryMessage }],
+              },
+            ],
+          }
+        : payload;
+
+      return await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    };
+
+    try {
+      let response = await executeRequest();
+
+      if (response.status === 429 || response.status === 403) {
+        const errText = await response.text();
+        if (
+          errText.toLowerCase().includes("quota") ||
+          errText.toLowerCase().includes("rate limit") ||
+          response.status === 429
+        ) {
+          return { ok: false, reason: "rate_limit" };
+        }
+      }
+
+      if (response.ok) {
+        const jsonPayload = (await response.json()) as {
+          candidates?: { content?: { parts?: { text?: string }[] } }[];
+        };
+        const text = jsonPayload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+        if (text) {
+          const cleaned = cleanResponseText(text);
+          try {
+            const parsed = geminiOutputSchema.parse(JSON.parse(cleaned));
+            return { ok: true, data: parsed };
+          } catch {
+            console.warn("Initial Gemini response parsing failed, attempting retry...");
+          }
+        }
+
+        response = await executeRequest(
+          "Your previous output did not match the required JSON schema. Please return ONLY a valid JSON object with keys: bug, module, description, expectedResult, actualResult.",
+        );
+
+        if (response.ok) {
+          const retryPayload = (await response.json()) as {
+            candidates?: { content?: { parts?: { text?: string }[] } }[];
+          };
+          const retryText = retryPayload.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+
+          if (retryText) {
+            const cleanedRetry = cleanResponseText(retryText);
+            const parsedRetry = geminiOutputSchema.parse(JSON.parse(cleanedRetry));
+            return { ok: true, data: parsedRetry };
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Gemini API request exception:", err);
+    }
+  }
+
+  // Fallback 2: Keyless QA generator engine
+  const fallbackOutput = generateQAWithKeyless(rawInput);
+  return { ok: true, data: fallbackOutput };
 }
 
 export const structureBug = createServerFn({ method: "POST" })
