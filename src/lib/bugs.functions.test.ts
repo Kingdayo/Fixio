@@ -182,14 +182,20 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("handles a missing API key gracefully by returning missing_key", async () => {
+  it("uses keyless QA generation when no API key is configured", async () => {
     delete process.env["GEMINI_API_KEY"];
     delete process.env["VITE_GEMINI_API_KEY"];
 
-    const result = await generateQAWithGemini("Test input");
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.reason).toBe("missing_key");
+    const result = await generateQAWithGemini(
+      "When a learner tries to log in on mobile, they are redirected to App Store instead of dashboard.",
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.bug).toBeDefined();
+      expect(result.data.module).toBe("Authentication - Login");
+      expect(result.data.expectedResult).toBeDefined();
+      expect(result.data.actualResult).toBeDefined();
     }
   });
 
