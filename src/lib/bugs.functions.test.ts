@@ -1,4 +1,3 @@
-/// <reference types="bun" />
 import { describe, expect, it, beforeEach, afterEach, mock } from "bun:test";
 import { generateQAWithGemini, geminiOutputSchema, SYSTEM_PROMPT } from "./bugs.functions";
 
