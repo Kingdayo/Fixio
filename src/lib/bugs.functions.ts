@@ -94,10 +94,9 @@ function cleanResponseText(text: string): string {
  * Executes AI generation exclusively using Google Gemini API (gemini-3.5-flash-lite).
  */
 export async function generateQAWithGemini(rawInput: string): Promise<AIQAFetchResult> {
-  const geminiKey =
-    process.env["GEMINI_API_KEY"] ||
-    process.env.GEMINI_API_KEY ||
-    process.env["VITE_GEMINI_API_KEY"];
+  // Read at request time (never at module scope) so the secret stays
+  // server-only and rotations take effect without a rebuild.
+  const geminiKey = process.env["GEMINI_API_KEY"];
 
   if (!geminiKey || !geminiKey.trim()) {
     return { ok: false, reason: "missing_key" };
