@@ -161,25 +161,15 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
     }
   });
 
-  it("uses VITE_GEMINI_API_KEY when GEMINI_API_KEY is missing", async () => {
+  it("reads the key strictly from server-side GEMINI_API_KEY (no VITE_ fallback)", async () => {
     delete process.env["GEMINI_API_KEY"];
     process.env["VITE_GEMINI_API_KEY"] = "vite-test-gemini-key";
 
-    const captured: { url: string } = { url: "" };
-    globalThis.fetch = mock(async (url: URL | RequestInfo) => {
-      captured.url = url.toString();
-      return geminiResponse({
-        bug: "Vite Key Test Bug",
-        module: "Module Test",
-        description: "Description test",
-        expectedResult: "Expected test",
-        actualResult: "Actual test",
-      });
-    }) as unknown as typeof fetch;
-
-    const result = await generateQAWithGemini("Test input using vite key");
-    expect(captured.url).toContain("key=vite-test-gemini-key");
-    expect(result.ok).toBe(true);
+    const result = await generateQAWithGemini("Test input");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe("missing_key");
+    }
   });
 
   it("handles a missing API key gracefully by returning missing_key", async () => {

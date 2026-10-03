@@ -95,13 +95,9 @@ function cleanResponseText(text: string): string {
  */
 export async function generateQAWithGemini(rawInput: string): Promise<AIQAFetchResult> {
   // Read at request time (never at module scope) so the secret stays
-  // server-only and rotations take effect without a rebuild.
-  const geminiKey =
-    process.env["GEMINI_API_KEY"] ||
-    process.env["VITE_GEMINI_API_KEY"] ||
-    (typeof import.meta !== "undefined" && import.meta.env
-      ? import.meta.env["VITE_GEMINI_API_KEY"]
-      : undefined);
+  // server-only and rotations take effect without a rebuild. This runs
+  // exclusively on the server — the key is never exposed to the browser.
+  const geminiKey = process.env["GEMINI_API_KEY"];
 
   if (!geminiKey || !geminiKey.trim()) {
     return { ok: false, reason: "missing_key" };
