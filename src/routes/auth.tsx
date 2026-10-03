@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useSession } from "@/hooks/useSession";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -41,6 +42,8 @@ function AuthPage() {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
   }, [loading, user, navigate]);
 
+  const [signedInSuccess, setSignedInSuccess] = useState(false);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -68,10 +71,12 @@ function AuthPage() {
         });
         if (error) throw error;
       }
-      navigate({ to: "/dashboard", replace: true });
+      setSignedInSuccess(true);
+      setTimeout(() => {
+        void navigate({ to: "/dashboard", replace: true });
+      }, 2000);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong. Try again.");
-    } finally {
       setBusy(false);
     }
   }
@@ -101,6 +106,17 @@ function AuthPage() {
       return;
     }
     toast.success("Password reset link sent to your email.");
+  }
+
+  if (signedInSuccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <OrbitalLoader
+          label="Sign in successful!"
+          sublabel="Redirecting to your dashboard…"
+        />
+      </div>
+    );
   }
 
   return (
