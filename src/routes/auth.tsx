@@ -115,10 +115,7 @@ function AuthPage() {
   if (signedInSuccess) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <OrbitalLoader
-          label="Sign in successful!"
-          sublabel="Redirecting to your dashboard…"
-        />
+        <OrbitalLoader label="Sign in successful!" sublabel="Redirecting to your dashboard…" />
       </div>
     );
   }
@@ -216,7 +213,11 @@ function AuthPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                     aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   >
-                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </button>
                 </div>
               </div>

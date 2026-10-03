@@ -3,6 +3,7 @@ import { generateQAWithGemini, geminiOutputSchema, SYSTEM_PROMPT } from "./bugs.
 
 const ORIGINAL_FETCH = globalThis.fetch;
 const ORIGINAL_ENV = process.env["GEMINI_API_KEY"];
+const ORIGINAL_VITE_ENV = process.env["VITE_GEMINI_API_KEY"];
 
 type GeminiRequestBody = {
   system_instruction?: {
@@ -36,6 +37,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
   afterEach(() => {
     globalThis.fetch = ORIGINAL_FETCH;
     process.env["GEMINI_API_KEY"] = ORIGINAL_ENV;
+    process.env["VITE_GEMINI_API_KEY"] = ORIGINAL_VITE_ENV;
   });
 
   it("validates structured Gemini output against geminiOutputSchema", () => {
@@ -75,8 +77,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
       return geminiResponse({
         bug: "Server Error During Google Sign-Up",
         module: "Sign Up - Google",
-        description:
-          "The Google sign-up process fails when a user attempts to create an account.",
+        description: "The Google sign-up process fails when a user attempts to create an account.",
         expectedResult:
           "Users should be able to complete registration successfully through the Google sign-up option.",
         actualResult: "A server error is displayed during Google sign-up.",
@@ -128,8 +129,7 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
         module: "Navigation - More Menu",
         description:
           "Opening the More menu displays additional navigation options, but the content cannot be scrolled.",
-        expectedResult:
-          "The More menu should allow users to scroll through all available options.",
+        expectedResult: "The More menu should allow users to scroll through all available options.",
         actualResult: "The additional navigation content is not scrollable.",
       });
     }) as unknown as typeof fetch;
@@ -161,8 +161,30 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
     }
   });
 
+  it("uses VITE_GEMINI_API_KEY when GEMINI_API_KEY is missing", async () => {
+    delete process.env["GEMINI_API_KEY"];
+    process.env["VITE_GEMINI_API_KEY"] = "vite-test-gemini-key";
+
+    const captured: { url: string } = { url: "" };
+    globalThis.fetch = mock(async (url: URL | RequestInfo) => {
+      captured.url = url.toString();
+      return geminiResponse({
+        bug: "Vite Key Test Bug",
+        module: "Module Test",
+        description: "Description test",
+        expectedResult: "Expected test",
+        actualResult: "Actual test",
+      });
+    }) as unknown as typeof fetch;
+
+    const result = await generateQAWithGemini("Test input using vite key");
+    expect(captured.url).toContain("key=vite-test-gemini-key");
+    expect(result.ok).toBe(true);
+  });
+
   it("handles a missing API key gracefully by returning missing_key", async () => {
     delete process.env["GEMINI_API_KEY"];
+    delete process.env["VITE_GEMINI_API_KEY"];
 
     const result = await generateQAWithGemini("Test input");
     expect(result.ok).toBe(false);
