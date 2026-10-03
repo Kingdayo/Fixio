@@ -161,15 +161,15 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
     }
   });
 
-  it("uses VITE_GEMINI_API_KEY when GEMINI_API_KEY is missing", async () => {
+  it("uses GOOGLE_API_KEY when GEMINI_API_KEY is missing", async () => {
     delete process.env["GEMINI_API_KEY"];
-    process.env["VITE_GEMINI_API_KEY"] = "vite-test-gemini-key";
+    process.env["GOOGLE_API_KEY"] = "google-test-key";
 
     const captured: { url: string } = { url: "" };
     globalThis.fetch = mock(async (url: URL | RequestInfo) => {
       captured.url = url.toString();
       return geminiResponse({
-        bug: "Vite Key Test Bug",
+        bug: "Google Key Test Bug",
         module: "Module Test",
         description: "Description test",
         expectedResult: "Expected test",
@@ -177,14 +177,15 @@ describe("generateQAWithGemini & Gemini AI processing", () => {
       });
     }) as unknown as typeof fetch;
 
-    const result = await generateQAWithGemini("Test input using vite key");
-    expect(captured.url).toContain("key=vite-test-gemini-key");
+    const result = await generateQAWithGemini("Test input using google key");
+    expect(captured.url).toContain("key=google-test-key");
     expect(result.ok).toBe(true);
+    delete process.env["GOOGLE_API_KEY"];
   });
 
   it("handles a missing API key gracefully by returning missing_key", async () => {
     delete process.env["GEMINI_API_KEY"];
-    delete process.env["VITE_GEMINI_API_KEY"];
+    delete process.env["GOOGLE_API_KEY"];
 
     const result = await generateQAWithGemini("Test input");
     expect(result.ok).toBe(false);

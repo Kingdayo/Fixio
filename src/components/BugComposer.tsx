@@ -34,7 +34,9 @@ export function BugComposer({ heading = "Document a new bug" }: { heading?: stri
         } else if (outcome.reason === "rate_limit") {
           toast.error("AI processing rate limit or quota reached. Please try again later.");
         } else if (outcome.reason === "missing_key") {
-          toast.error("AI processing is unavailable: GEMINI_API_KEY is missing or not configured.");
+          toast.error(
+            "AI processing is unavailable: the Gemini API key is missing or not configured.",
+          );
         } else if (outcome.reason === "save") {
           toast.error("Bug processing succeeded, but saving failed. Please try again.");
         } else if (outcome.reason === "ai") {
