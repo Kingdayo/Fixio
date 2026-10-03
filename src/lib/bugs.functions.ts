@@ -90,16 +90,38 @@ function cleanResponseText(text: string): string {
     .trim();
 }
 
+function getGeminiApiKey(): string | undefined {
+  // Access process.env dynamically via runtime global to avoid Vite static replacement during build.
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const runtimeEnv =
+    typeof globalThis !== "undefined" && (globalThis as any).process?.env
+      ? (globalThis as any).process.env
+      : typeof process !== "undefined"
+        ? process.env
+        : {};
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
+  const key =
+    runtimeEnv["GEMINI_API_KEY"] ||
+    runtimeEnv["VITE_GEMINI_API_KEY"] ||
+    process.env["GEMINI_API_KEY"] ||
+    process.env["VITE_GEMINI_API_KEY"] ||
+    (typeof import.meta !== "undefined" && import.meta.env
+      ? import.meta.env["VITE_GEMINI_API_KEY"]
+      : undefined);
+
+  return typeof key === "string" && key.trim() ? key.trim() : undefined;
+}
+
 /**
  * Executes AI generation exclusively using Google Gemini API (gemini-3.5-flash-lite).
  */
 export async function generateQAWithGemini(rawInput: string): Promise<AIQAFetchResult> {
-  // Read at request time (never at module scope) so the secret stays
-  // server-only and rotations take effect without a rebuild. This runs
-  // exclusively on the server — the key is never exposed to the browser.
-  const geminiKey = process.env["GEMINI_API_KEY"];
+  // Read dynamically at request time so secrets added/updated in Lovable Secrets
+  // take effect immediately without requiring a full code rebuild.
+  const geminiKey = getGeminiApiKey();
 
-  if (!geminiKey || !geminiKey.trim()) {
+  if (!geminiKey) {
     return { ok: false, reason: "missing_key" };
   }
 
