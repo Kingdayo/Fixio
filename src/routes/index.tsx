@@ -26,13 +26,44 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+import { useState } from "react";
+import { OrbitalLoader } from "@/components/OrbitalLoader";
+
 function Landing() {
   const { user, loading } = useSession();
   const navigate = useNavigate();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [navigatingToAuth, setNavigatingToAuth] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
   }, [loading, user, navigate]);
+
+  function handleNavigateToAuth(e: React.MouseEvent) {
+    e.preventDefault();
+    setNavigatingToAuth(true);
+    setTimeout(() => {
+      void navigate({ to: "/auth" });
+    }, 1500);
+  }
+
+  if (initialLoading || navigatingToAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <OrbitalLoader
+          label={navigatingToAuth ? "Loading authentication…" : "Loading Fixio…"}
+          sublabel="Setting up your QA documentation workspace"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -50,12 +81,13 @@ function Landing() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link
-              to="/auth"
+            <a
+              href="/auth"
+              onClick={handleNavigateToAuth}
               className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
             >
               Sign in
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -70,12 +102,13 @@ function Landing() {
           expected result and actual result, then files it to your own private history.
         </p>
         <div className="mt-8">
-          <Link
-            to="/auth"
+          <a
+            href="/auth"
+            onClick={handleNavigateToAuth}
             className="inline-flex rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-brand-foreground transition-transform active:scale-95"
           >
             Start documenting
-          </Link>
+          </a>
         </div>
 
         <div className="mt-16 overflow-hidden rounded-3xl bg-card p-6 shadow-card ring-1 ring-border sm:p-8">
