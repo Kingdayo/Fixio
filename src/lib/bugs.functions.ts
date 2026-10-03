@@ -91,6 +91,8 @@ function cleanResponseText(text: string): string {
 }
 
 function getGeminiApiKey(): string | undefined {
+  // Server-side only: read the key from the runtime environment at request time
+  // so secrets saved in Lovable Secrets take effect without a rebuild.
   // Access process.env dynamically via runtime global to avoid Vite static replacement during build.
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const runtimeEnv =
@@ -103,12 +105,9 @@ function getGeminiApiKey(): string | undefined {
 
   const key =
     runtimeEnv["GEMINI_API_KEY"] ||
-    runtimeEnv["VITE_GEMINI_API_KEY"] ||
+    runtimeEnv["GOOGLE_API_KEY"] ||
     process.env["GEMINI_API_KEY"] ||
-    process.env["VITE_GEMINI_API_KEY"] ||
-    (typeof import.meta !== "undefined" && import.meta.env
-      ? import.meta.env["VITE_GEMINI_API_KEY"]
-      : undefined);
+    process.env["GOOGLE_API_KEY"];
 
   return typeof key === "string" && key.trim() ? key.trim() : undefined;
 }
