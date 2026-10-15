@@ -265,10 +265,13 @@ function HistoryPage() {
           </Select>
 
           {filtered.length > 0 && (
-            <label
-              className="flex items-center gap-2 rounded-xl border-2 border-border/80 bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:border-brand/60 transition-all cursor-pointer"
-            >
-              <Checkbox checked={isAllSelected} onCheckedChange={toggleSelectAll} disabled={isDeleting} aria-label="Select all bugs" />
+            <label className="flex items-center gap-2 rounded-xl border-2 border-border/80 bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:border-brand/60 transition-all cursor-pointer">
+              <Checkbox
+                checked={isAllSelected}
+                onCheckedChange={toggleSelectAll}
+                disabled={isDeleting}
+                aria-label="Select all bugs"
+              />
               <span>{isAllSelected ? "Deselect all" : "Select all"}</span>
             </label>
           )}
@@ -447,10 +450,19 @@ function HistoryPage() {
       )}
 
       {/* Confirmation Dialog for Batch Deletion */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open) => { if (!isDeleting) setDeleteConfirmOpen(open); }}>
+      <AlertDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(open) => {
+          if (!isDeleting) setDeleteConfirmOpen(open);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{selectedIds.size === 1 ? "Delete this bug?" : `Delete ${selectedIds.size} bug reports?`}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {selectedIds.size === 1
+                ? "Delete this bug?"
+                : `Delete ${selectedIds.size} bug reports?`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to permanently delete {selectedIds.size}{" "}
               {selectedIds.size === 1 ? "bug report" : "bug reports"}? This action cannot be undone.
@@ -459,11 +471,18 @@ function HistoryPage() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={(event) => { event.preventDefault(); void handleBatchDelete(); }}
+              onClick={(event) => {
+                event.preventDefault();
+                void handleBatchDelete();
+              }}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting…" : selectedIds.size === 1 ? "Delete bug" : "Delete bug reports"}
+              {isDeleting
+                ? "Deleting…"
+                : selectedIds.size === 1
+                  ? "Delete bug"
+                  : "Delete bug reports"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
