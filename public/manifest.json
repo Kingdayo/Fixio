@@ -1,0 +1,17 @@
+{
+  "short_name": "Fixio",
+  "name": "Fixio — Personal QA Bug Documentation",
+  "description": "Turn raw bug notes into professional QA reports instantly.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090d16",
+  "theme_color": "#ff5200",
+  "display": "standalone",
+  "orientation": "portrait"
+}
