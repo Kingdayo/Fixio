@@ -33,6 +33,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const routerState = useRouterState({
     select: (s) => ({
       isLoading: s.isLoading,
+      pathname: s.location.pathname,
     }),
   });
 
@@ -120,7 +121,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+      <main key={routerState.pathname} className="workspace-motion animate-page-entry mx-auto max-w-6xl px-5 pb-28 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
         {sessionLoading || routerState.isLoading ? (
           <OrbitalLoader
             label="Loading Fixio…"
