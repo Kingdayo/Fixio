@@ -77,7 +77,7 @@ function getRuntimeEnvVar(key: string): string | undefined {
         : {};
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  const val = runtimeEnv[key] || (typeof process !== "undefined" ? process[key] : undefined);
+  const val = runtimeEnv[key];
   return typeof val === "string" && val.trim() ? val.trim() : undefined;
 }
 
@@ -138,9 +138,10 @@ export function generateQAWithKeyless(rawInput: string): GeminiQAOutput {
 
   if (/redirect|sent to|navigat/i.test(text) && /instead/i.test(text)) {
     const parts = text.split(/instead of|instead/i);
-    if (parts.length >= 2) {
-      expectedResult = `The user should be directed to ${parts[1].trim().replace(/\.$/, "")}.`;
-      actualResult = `The user is incorrectly redirected: ${parts[0].trim().replace(/\.$/, "")}.`;
+    const [observed, intended] = parts;
+    if (observed !== undefined && intended !== undefined) {
+      expectedResult = `The user should be directed to ${intended.trim().replace(/\.$/, "")}.`;
+      actualResult = `The user is incorrectly redirected: ${observed.trim().replace(/\.$/, "")}.`;
     }
   } else if (/error|fail|crash|bug|issue|broken/i.test(text)) {
     expectedResult = "The feature should function smoothly without errors or unexpected behavior.";

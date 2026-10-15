@@ -10,3 +10,5 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+
+- Keep workspace motion in the global stylesheet and key the workspace content by pathname so navigation replays entry transitions without an animation dependency.
