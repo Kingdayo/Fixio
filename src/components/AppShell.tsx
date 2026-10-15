@@ -9,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { initialsFrom } from "@/lib/bug-utils";
 import { OrbitalLoader } from "@/components/OrbitalLoader";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,6 +136,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           children
         )}
       </main>
+
+      <PwaInstallPrompt />
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card md:hidden">
         <div className="mx-auto flex max-w-md items-stretch justify-between px-2 py-1.5">
