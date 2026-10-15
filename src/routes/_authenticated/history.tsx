@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -134,7 +135,7 @@ function HistoryPage() {
   }
 
   async function handleBatchDelete() {
-    if (selectedIds.size === 0) return;
+    if (selectedIds.size === 0 || isDeleting) return;
     setIsDeleting(true);
 
     const idsToDelete = Array.from(selectedIds);
@@ -264,13 +265,12 @@ function HistoryPage() {
           </Select>
 
           {filtered.length > 0 && (
-            <button
-              onClick={toggleSelectAll}
+            <label
               className="flex items-center gap-2 rounded-xl border-2 border-border/80 bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:border-brand/60 transition-all cursor-pointer"
             >
-              <Checkbox checked={isAllSelected} onCheckedChange={toggleSelectAll} />
+              <Checkbox checked={isAllSelected} onCheckedChange={toggleSelectAll} disabled={isDeleting} aria-label="Select all bugs" />
               <span>{isAllSelected ? "Deselect all" : "Select all"}</span>
-            </button>
+            </label>
           )}
 
           {filtersActive && (
@@ -301,19 +301,23 @@ function HistoryPage() {
             </p>
           </div>
           <div className="flex items-center gap-2.5">
-            <button
+            <Button
+              variant="ghost"
+              disabled={isDeleting}
               onClick={() => setSelectedIds(new Set())}
               className="rounded-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
             >
               Deselect
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isDeleting}
               onClick={() => setDeleteConfirmOpen(true)}
               className="flex items-center gap-1.5 rounded-full bg-destructive px-5 py-2.5 text-xs font-semibold text-destructive-foreground hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
               <Trash2 className="size-3.5" />
               Delete selected ({selectedIds.size})
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -367,6 +371,7 @@ function HistoryPage() {
                 <div className="flex items-center gap-3">
                   <Checkbox
                     checked={isGroupFullySelected}
+                    disabled={isDeleting}
                     onCheckedChange={() => toggleSelectGroup(groupBugIds)}
                     aria-label={`Select group ${group.label}`}
                     className="cursor-pointer"
@@ -377,12 +382,15 @@ function HistoryPage() {
                   <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
                     {group.bugs.length} {group.bugs.length === 1 ? "bug" : "bugs"}
                   </span>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={isDeleting}
                     onClick={() => toggleSelectGroup(groupBugIds)}
                     className="text-xs text-muted-foreground hover:text-brand font-medium cursor-pointer"
                   >
                     {isGroupFullySelected ? "Deselect group" : "Select group"}
-                  </button>
+                  </Button>
                   <span className="h-px flex-1 bg-border" />
                 </div>
                 <ul className="mt-3 space-y-3">
@@ -397,20 +405,15 @@ function HistoryPage() {
                           }`}
                         >
                           <div className="flex items-start gap-3.5">
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleSelectBug(bug.id);
-                              }}
-                              className="mt-1 flex items-center justify-center cursor-pointer p-1"
-                            >
+                            <label className="mt-1 flex size-8 shrink-0 items-center justify-center cursor-pointer">
                               <Checkbox
                                 checked={isSelected}
+                                disabled={isDeleting}
                                 onCheckedChange={() => toggleSelectBug(bug.id)}
                                 aria-label={`Select bug ${bug.title}`}
                                 className="cursor-pointer"
                               />
-                            </div>
+                            </label>
                             <Link
                               to="/bugs/$bugId"
                               params={{ bugId: bug.id }}
@@ -444,10 +447,10 @@ function HistoryPage() {
       )}
 
       {/* Confirmation Dialog for Batch Deletion */}
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={(open) => { if (!isDeleting) setDeleteConfirmOpen(open); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedIds.size} bug reports?</AlertDialogTitle>
+            <AlertDialogTitle>{selectedIds.size === 1 ? "Delete this bug?" : `Delete ${selectedIds.size} bug reports?`}</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to permanently delete {selectedIds.size}{" "}
               {selectedIds.size === 1 ? "bug report" : "bug reports"}? This action cannot be undone.
@@ -456,11 +459,11 @@ function HistoryPage() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => void handleBatchDelete()}
+              onClick={(event) => { event.preventDefault(); void handleBatchDelete(); }}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting…" : "Delete bug reports"}
+              {isDeleting ? "Deleting…" : selectedIds.size === 1 ? "Delete bug" : "Delete bug reports"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
