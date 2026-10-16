@@ -11,7 +11,7 @@
       "bundleIdentifier": "com.fixio.mobile"
     },
     "android": {
-      "package": "com.fixio.mobile",
+      "package": "com.fixiomobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"
@@ -21,6 +21,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "./plugins/withIconBackground.js",
       [
         "expo-image-picker",
         {
