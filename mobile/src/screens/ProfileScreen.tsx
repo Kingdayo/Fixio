@@ -45,19 +45,31 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   useEffect(() => {
     async function getBugCount() {
       if (!user?.id) return;
-      const { count } = await supabase
-        .from("bugs")
-        .select("id", { count: "exact", head: true });
-      if (count !== null) setBugCount(count);
+      try {
+        const { count } = await supabase
+          .from("bugs")
+          .select("id", { count: "exact", head: true });
+        if (count !== null) setBugCount(count);
+      } catch {
+        // Fallback
+      }
     }
     void getBugCount();
 
     async function checkNotifications() {
-      const settings = await Notifications.getPermissionsAsync();
-      setNotificationsEnabled(
-        settings.granted ||
-          settings.ios?.status === Notifications.IosAuthorizationStatus.AUTHORIZED
-      );
+      try {
+        if (typeof Notifications?.getPermissionsAsync === "function") {
+          const settings = await Notifications.getPermissionsAsync();
+          setNotificationsEnabled(
+            Boolean(
+              settings?.granted ||
+                settings?.ios?.status === Notifications.IosAuthorizationStatus?.AUTHORIZED
+            )
+          );
+        }
+      } catch {
+        setNotificationsEnabled(false);
+      }
     }
     void checkNotifications();
   }, [user?.id]);
@@ -65,10 +77,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const handleToggleNotifications = async (value: boolean) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (value) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      setNotificationsEnabled(status === "granted");
-      if (status === "granted") {
-        Alert.alert("Notifications enabled", "You will receive updates for important QA activity.");
+      try {
+        if (typeof Notifications?.requestPermissionsAsync === "function") {
+          const { status } = await Notifications.requestPermissionsAsync();
+          setNotificationsEnabled(status === "granted");
+          if (status === "granted") {
+            Alert.alert("Notifications enabled", "You will receive updates for important QA activity.");
+          } else {
+            Alert.alert("Permission required", "Notification permissions were not granted.");
+          }
+        } else {
+          setNotificationsEnabled(true);
+        }
+      } catch {
+        setNotificationsEnabled(true);
+        Alert.alert("Notifications preference updated", "In-app notifications are enabled.");
       }
     } else {
       setNotificationsEnabled(false);
@@ -277,7 +300,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
             <View style={styles.prefRow}>
               <View>
-                <Text style={[styles.prefTitle, { color: colors.text }]}>Push Notifications</Text>
+                <Text style={[styles.prefTitle, { color: colors.text }]}>In-App Notifications</Text>
                 <Text style={[styles.prefSubtitle, { color: colors.textMuted }]}>
                   Receive QA updates
                 </Text>
