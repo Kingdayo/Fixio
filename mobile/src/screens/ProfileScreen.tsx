@@ -10,7 +10,6 @@ import {
   Alert,
   Switch,
 } from "react-native";
-import * as Notifications from "expo-notifications";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabase";
@@ -34,7 +33,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [bugCount, setBugCount] = useState(0);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useEffect(() => {
     if (profile?.name !== undefined) {
@@ -55,46 +54,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       }
     }
     void getBugCount();
-
-    async function checkNotifications() {
-      try {
-        if (typeof Notifications?.getPermissionsAsync === "function") {
-          const settings = await Notifications.getPermissionsAsync();
-          setNotificationsEnabled(
-            Boolean(
-              settings?.granted ||
-                settings?.ios?.status === Notifications.IosAuthorizationStatus?.AUTHORIZED
-            )
-          );
-        }
-      } catch {
-        setNotificationsEnabled(false);
-      }
-    }
-    void checkNotifications();
   }, [user?.id]);
 
-  const handleToggleNotifications = async (value: boolean) => {
+  const handleToggleNotifications = (value: boolean) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setNotificationsEnabled(value);
     if (value) {
-      try {
-        if (typeof Notifications?.requestPermissionsAsync === "function") {
-          const { status } = await Notifications.requestPermissionsAsync();
-          setNotificationsEnabled(status === "granted");
-          if (status === "granted") {
-            Alert.alert("Notifications enabled", "You will receive updates for important QA activity.");
-          } else {
-            Alert.alert("Permission required", "Notification permissions were not granted.");
-          }
-        } else {
-          setNotificationsEnabled(true);
-        }
-      } catch {
-        setNotificationsEnabled(true);
-        Alert.alert("Notifications preference updated", "In-app notifications are enabled.");
-      }
+      Alert.alert("In-app notifications enabled", "You will receive updates for important QA activity.");
     } else {
-      setNotificationsEnabled(false);
+      Alert.alert("Notifications muted", "In-app notifications have been disabled.");
     }
   };
 
@@ -307,7 +275,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               </View>
               <Switch
                 value={notificationsEnabled}
-                onValueChange={(val) => void handleToggleNotifications(val)}
+                onValueChange={(val) => handleToggleNotifications(val)}
                 trackColor={{ false: colors.border, true: colors.brand }}
                 thumbColor="#FFFFFF"
               />

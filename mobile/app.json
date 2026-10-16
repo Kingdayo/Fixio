@@ -14,12 +14,6 @@
     },
     "plugins": [
       [
-        "expo-notifications",
-        {
-          "color": "#F97316"
-        }
-      ],
-      [
         "expo-image-picker",
         {
           "photosPermission": "Fixio needs access to your photos to attach screenshots to bug reports.",
