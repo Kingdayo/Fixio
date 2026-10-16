@@ -1,4 +1,4 @@
-const { withAndroidColors, withAndroidColorsNight } = require('@expo/config-plugins');
+const { withAndroidColors, withAndroidColorsNight, withAppBuildGradle } = require('@expo/config-plugins');
 const { assignColorValue } = require('@expo/config-plugins/build/android/Colors');
 
 function withIconBackground(config) {
@@ -17,6 +17,18 @@ function withIconBackground(config) {
       name: 'iconBackground',
       value: backgroundColor,
     });
+    return config;
+  });
+
+  config = withAppBuildGradle(config, (config) => {
+    if (config.modResults.language === 'groovy') {
+      if (!config.modResults.contents.includes('buildConfig true') && !config.modResults.contents.includes('buildConfig = true')) {
+        config.modResults.contents = config.modResults.contents.replace(
+          /android\s*\{/,
+          `android {\n    buildFeatures {\n        buildConfig true\n    }`
+        );
+      }
+    }
     return config;
   });
 
