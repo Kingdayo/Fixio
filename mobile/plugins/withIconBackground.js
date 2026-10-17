@@ -35,6 +35,12 @@ function withIconBackground(config) {
           `android {\n    buildFeatures {\n        buildConfig true\n    }`
         );
       }
+      if (!config.modResults.contents.includes('IS_NEW_ARCHITECTURE_ENABLED')) {
+        config.modResults.contents = config.modResults.contents.replace(
+          /defaultConfig\s*\{/,
+          `defaultConfig {\n        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", "\${findProperty('newArchEnabled') ?: 'true'}"`
+        );
+      }
     }
     return config;
   });
