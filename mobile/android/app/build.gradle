@@ -90,10 +90,10 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.fixiomobile'
+    namespace 'com.fixio.mobile'
     defaultConfig {
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", "${findProperty('newArchEnabled') ?: 'true'}"
-        applicationId 'com.fixiomobile'
+        applicationId 'com.fixio.mobile'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
