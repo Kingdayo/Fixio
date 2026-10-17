@@ -1,6 +1,6 @@
-package com.fixiomobile
+package com.fixio.mobile
 
-import com.fixiomobile.BuildConfig
+import com.fixio.mobile.BuildConfig
 
 import android.app.Application
 import android.content.res.Configuration

@@ -1,7 +1,7 @@
-package com.fixiomobile
-import com.fixiomobile.BuildConfig
+package com.fixio.mobile
 
-import com.fixiomobile.R
+import com.fixio.mobile.BuildConfig
+import com.fixio.mobile.R
 
 import android.os.Build
 import android.os.Bundle

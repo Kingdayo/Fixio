@@ -9,7 +9,7 @@ const { assignColorValue } = require('@expo/config-plugins/build/android/Colors'
 
 function withIconBackground(config) {
   const backgroundColor = config.android?.adaptiveIcon?.backgroundColor || '#0F172A';
-  const packageName = config.android?.package || 'com.fixiomobile';
+  const packageName = config.android?.package || 'com.fixio.mobile';
 
   config = withAndroidColors(config, (config) => {
     config.modResults = assignColorValue(config.modResults, {
